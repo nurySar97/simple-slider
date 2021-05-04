@@ -1,0 +1,29 @@
+body,
+html {
+    font-size: 1rem;
+}
+
+body {
+    margin: 0;
+}
+
+*, 
+::after,
+::before {
+    box-sizing: border-box;
+}
+
+.App {
+    padding: 1rem;
+    background: #136a8a;
+    background: -webkit-linear-gradient(to right, #267871, #136a8a);
+    background: linear-gradient(to right, #267871, #136a8a);
+    min-height: 100vh;
+}
+
+.container{
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    background: black;
+}

@@ -1,0 +1,43 @@
+.react-slider {
+    position: relative;
+    width: 100%;
+}
+
+.react-slider__inner {
+    width: 100%;
+    overflow: hidden;
+}
+
+.react-slider__track {
+    display: flex;
+}
+
+.react-slider-1{
+    height: 100px;
+    background: red;
+}
+
+.react-slider-2{
+    height: 100px;
+    background: green;
+}
+
+.react-slider-3{
+    height: 100px;
+    background: blue;
+}
+
+.react-slider-4{
+    height: 100px;
+    background: #3a4949;
+}
+
+.react-slider-5{
+    height: 100px;
+    background: violet;
+}
+
+.react-slider-6{
+    height: 100px;
+    background: turquoise;
+}
