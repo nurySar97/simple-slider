@@ -9,6 +9,7 @@ let translateX = (value = 0) => `translateX(${value}px)`;
 
 const ReactSlider = ({ children }) => {
     const counter = useRef(0);
+    const isBlocked = useRef(false);
     const simpleSliderItems = useRef(null);
     const [isPageLoaded, setIsPageLoaded] = useState(false);
     const [sliderItemsWidth, setSliderItemsWidth] = useState(0);
@@ -39,29 +40,51 @@ const ReactSlider = ({ children }) => {
     }, []);
 
     const onNextHandleClick = () => {
-        
-        setSliderTrackStyles(prev => {
-            return ({
+        if (isBlocked.current) return;
+        isBlocked.current = true
+
+        setTimeout(() => {
+            isBlocked.current = false
+        }, 350)
+
+        if (counter.current === 3) {
+            setHandleWidthToItems();
+            counter.current = 0;
+        }
+
+        setTimeout(() => {
+            setSliderTrackStyles(prev => ({
                 ...prev,
                 transform: translateX(prev.count + (sliderItemsWidth / 3)),
                 count: prev.count + (sliderItemsWidth / 3),
                 transition: transition(200)
-            })
-        })
-        ++counter.current
+            }))
+            ++counter.current
+        }, 0)
     }
 
     const onPrevHandleClick = () => {
+        if (isBlocked.current) return;
+        isBlocked.current = true
 
-        setSliderTrackStyles(prev => {
-            return ({
+        setTimeout(() => {
+            isBlocked.current = false
+        }, 350)
+
+        if (counter.current === -3) {
+            setHandleWidthToItems();
+            counter.current = 0;
+        }
+
+        setTimeout(() => {
+            setSliderTrackStyles(prev => ({
                 ...prev,
                 transform: translateX(prev.count - (sliderItemsWidth / 3)),
                 count: prev.count - (sliderItemsWidth / 3),
                 transition: transition(200)
-            })
-        })
-        --counter.current
+            }))
+            --counter.current
+        }, 0)
     }
 
     useEffect(() => {
@@ -80,7 +103,7 @@ const ReactSlider = ({ children }) => {
                 {sliderItemsWidth}
                 <div className="simple-slider__inner">
 
-                    <button 
+                    <button
                         className='simple-slider__btn simple-slider__bnt--next'
                         onClick={onNextHandleClick}
                     >
@@ -113,7 +136,7 @@ const ReactSlider = ({ children }) => {
                         </div>
                     </div>
 
-                    <button 
+                    <button
                         className='simple-slider__bnt simple-slider__bnt--prev'
                         onClick={onPrevHandleClick}
                     >
