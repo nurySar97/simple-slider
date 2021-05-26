@@ -13,7 +13,7 @@ body {
     box-sizing: border-box;
 }
 
-.App {
+.app {
     background: #136a8a;
     background: -webkit-linear-gradient(to right, #267871, #136a8a);
     background: linear-gradient(to right, #267871, #136a8a);
@@ -24,4 +24,5 @@ body {
     width: 100%;
     max-width: 1200px;
     margin: 0 auto;
+    padding: 1rem;
 }

@@ -1,12 +1,3 @@
-export function Divider(count, divider) {
-    let _newArray = [], counter = 1;
-    [...new Array(count)].forEach(_ => {
-        if (counter <= divider) {
-            _newArray.push(counter++)
-            return
-        }
-        counter = 1
-        _newArray.push(counter++)
-    })
-    return _newArray
-}
+export let multiplyArray = array => [...array, ...array, ...array];
+export let transition = (s = 0) => `all ${s}ms linear`;
+export let translateX = (value = 0) => `translateX(${value}px)`;
