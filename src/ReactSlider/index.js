@@ -13,28 +13,31 @@ const ReactSlider = ({ children, showItemsCount }) => {
     const [isPageLoaded, setIsPageLoaded] = useState(false);
     const [sliderItemsWidth, setSliderItemsWidth] = useState(0);
     const [sliderTrackStyles, setSliderTrackStyles] = useState({});
+    const COUNT_OF_CHILDS = children?.length;
+
 
     const setHandleWidthToItems = useCallback(() => {
-        let _WHIDTH_SLIDER_ITEMS = simpleSliderItems.current.clientWidth;
-        let _TRANSFORM = -_WHIDTH_SLIDER_ITEMS + counter.current * (_WHIDTH_SLIDER_ITEMS/3);
+        let _SLIDER_ITEMS_WIDTH = simpleSliderItems.current.clientWidth;
+        let _TRANSFORM = -(_SLIDER_ITEMS_WIDTH/2) * COUNT_OF_CHILDS + counter.current * (_SLIDER_ITEMS_WIDTH/2);
 
-        if (_WHIDTH_SLIDER_ITEMS % 3 === 0) {
-            setSliderItemsWidth(_WHIDTH_SLIDER_ITEMS);
+        if (_SLIDER_ITEMS_WIDTH % 2 === 0) {
+            setSliderItemsWidth(_SLIDER_ITEMS_WIDTH);
             setSliderTrackStyles(prev => ({
                 ...prev,
-                width: _WHIDTH_SLIDER_ITEMS * 3,
+                width: (_SLIDER_ITEMS_WIDTH/2) * COUNT_OF_CHILDS * 3,
                 transform: translateX(_TRANSFORM),
                 count: _TRANSFORM,
                 transition: transition()
             }))
             return
         }
-        _TRANSFORM = -(_WHIDTH_SLIDER_ITEMS - _WHIDTH_SLIDER_ITEMS % 3) + counter.current * (_WHIDTH_SLIDER_ITEMS - _WHIDTH_SLIDER_ITEMS % 3)/3;
 
-        setSliderItemsWidth(_WHIDTH_SLIDER_ITEMS - _WHIDTH_SLIDER_ITEMS % 3);
+        _TRANSFORM = -(_SLIDER_ITEMS_WIDTH - _SLIDER_ITEMS_WIDTH % 2)/2 * COUNT_OF_CHILDS + counter.current * (_SLIDER_ITEMS_WIDTH - _SLIDER_ITEMS_WIDTH % 2)/2;
+
+        setSliderItemsWidth(_SLIDER_ITEMS_WIDTH - _SLIDER_ITEMS_WIDTH % 2);
         setSliderTrackStyles(prev => ({
             ...prev,
-            width: (_WHIDTH_SLIDER_ITEMS - _WHIDTH_SLIDER_ITEMS % 3) * 3,
+            width: ((_SLIDER_ITEMS_WIDTH - _SLIDER_ITEMS_WIDTH % 2)/2) * COUNT_OF_CHILDS * 3,
             transform: translateX(_TRANSFORM),
             count: _TRANSFORM,
             transition: transition()
@@ -49,7 +52,7 @@ const ReactSlider = ({ children, showItemsCount }) => {
             isBlocked.current = false;
         }, 330)
 
-        if (counter.current === q * 3) {
+        if (counter.current === q * COUNT_OF_CHILDS) {
             counter.current = 0;
             setHandleWidthToItems();
         }
@@ -57,8 +60,8 @@ const ReactSlider = ({ children, showItemsCount }) => {
         setTimeout(() => {
             setSliderTrackStyles(prev => ({
                 ...prev,
-                transform: translateX(prev.count + q * (sliderItemsWidth / 3)),
-                count: prev.count + q * (sliderItemsWidth / 3),
+                transform: translateX(prev.count + q * (sliderItemsWidth / 2)),
+                count: prev.count + q * (sliderItemsWidth / 2),
                 transition: transition(300)
             }))
             counter.current = counter.current + q
@@ -102,7 +105,7 @@ const ReactSlider = ({ children, showItemsCount }) => {
                                         className='simple-slider__item'
                                         key={nextId()}
                                         style={{
-                                            width: (sliderItemsWidth / 3)
+                                            width: (sliderItemsWidth / 2)
                                         }}
                                     >
                                         {Item}
