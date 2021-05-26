@@ -13,18 +13,19 @@ const ReactSlider = ({ children, showItemsCount }) => {
     const [isPageLoaded, setIsPageLoaded] = useState(false);
     const [sliderItemsWidth, setSliderItemsWidth] = useState(0);
     const [sliderTrackStyles, setSliderTrackStyles] = useState({});
-    const COUNT_OF_CHILDS = children?.length;
 
+    const COUNT_OF_CHILDS = children?.length;
 
     const setHandleWidthToItems = useCallback(() => {
         let _SLIDER_ITEMS_WIDTH = simpleSliderItems.current.clientWidth;
-        let _TRANSFORM = -(_SLIDER_ITEMS_WIDTH/2) * COUNT_OF_CHILDS + counter.current * (_SLIDER_ITEMS_WIDTH/2);
+        let _TRANSFORM = -(_SLIDER_ITEMS_WIDTH / 2) * COUNT_OF_CHILDS + counter.current * (_SLIDER_ITEMS_WIDTH / 2) + (_SLIDER_ITEMS_WIDTH / 4)
+        let EVEN_OR_ODD = _SLIDER_ITEMS_WIDTH % 2;
 
-        if (_SLIDER_ITEMS_WIDTH % 2 === 0) {
+        if (EVEN_OR_ODD === 0) {
             setSliderItemsWidth(_SLIDER_ITEMS_WIDTH);
             setSliderTrackStyles(prev => ({
                 ...prev,
-                width: (_SLIDER_ITEMS_WIDTH/2) * COUNT_OF_CHILDS * 3,
+                width: (_SLIDER_ITEMS_WIDTH / 2) * COUNT_OF_CHILDS * 3,
                 transform: translateX(_TRANSFORM),
                 count: _TRANSFORM,
                 transition: transition()
@@ -32,19 +33,19 @@ const ReactSlider = ({ children, showItemsCount }) => {
             return
         }
 
-        _TRANSFORM = -(_SLIDER_ITEMS_WIDTH - _SLIDER_ITEMS_WIDTH % 2)/2 * COUNT_OF_CHILDS + counter.current * (_SLIDER_ITEMS_WIDTH - _SLIDER_ITEMS_WIDTH % 2)/2;
+        _TRANSFORM = -(_SLIDER_ITEMS_WIDTH - EVEN_OR_ODD) / 2 * COUNT_OF_CHILDS + counter.current * (_SLIDER_ITEMS_WIDTH - EVEN_OR_ODD) / 2 + (_SLIDER_ITEMS_WIDTH - EVEN_OR_ODD) / 4
 
-        setSliderItemsWidth(_SLIDER_ITEMS_WIDTH - _SLIDER_ITEMS_WIDTH % 2);
+        setSliderItemsWidth(_SLIDER_ITEMS_WIDTH - EVEN_OR_ODD);
         setSliderTrackStyles(prev => ({
             ...prev,
-            width: ((_SLIDER_ITEMS_WIDTH - _SLIDER_ITEMS_WIDTH % 2)/2) * COUNT_OF_CHILDS * 3,
+            width: ((_SLIDER_ITEMS_WIDTH - EVEN_OR_ODD) / 2) * COUNT_OF_CHILDS * 3,
             transform: translateX(_TRANSFORM),
             count: _TRANSFORM,
             transition: transition()
         }))
-    }, []);
+    }, [COUNT_OF_CHILDS]);
 
-    const slideEventHandler = (q = 1) => {
+    const slideEventHandler = ({ type, q }) => {
         if (isBlocked.current) return;
         isBlocked.current = true;
 
@@ -52,9 +53,16 @@ const ReactSlider = ({ children, showItemsCount }) => {
             isBlocked.current = false;
         }, 330)
 
-        if (counter.current === q * COUNT_OF_CHILDS) {
-            counter.current = 0;
-            setHandleWidthToItems();
+        if (type === "next") {
+            if (counter.current === q * (COUNT_OF_CHILDS - 1)) {
+                counter.current = -1;
+                setHandleWidthToItems();
+            }
+        } else {
+            if (counter.current === q * COUNT_OF_CHILDS) {
+                counter.current = 0;
+                setHandleWidthToItems();
+            }
         }
 
         setTimeout(() => {
@@ -69,60 +77,66 @@ const ReactSlider = ({ children, showItemsCount }) => {
     }
 
     useEffect(() => {
-        setIsPageLoaded(() => true);
-        setHandleWidthToItems();
-        window.addEventListener("resize", setHandleWidthToItems);
-        return () => {
-            window.removeEventListener('resize', setHandleWidthToItems);
+        if (children) {
+            setIsPageLoaded(() => true);
+            setHandleWidthToItems();
+            window.addEventListener("resize", setHandleWidthToItems);
+            return () => {
+                window.removeEventListener('resize', setHandleWidthToItems);
+            }
         }
-    }, [setHandleWidthToItems]);
+    }, [setHandleWidthToItems, children]);
 
     return (
         <div className='container'>
-            <section className="simple-slider">
-                <div className="simple-slider__inner">
+            {
+                children
+                &&
+                <section className="simple-slider">
+                    <div className="simple-slider__inner">
 
-                    <button
-                        className='simple-slider__btn simple-slider__bnt--next'
-                        onClick={() => slideEventHandler()}
-                    >
-                        Next
-                    </button>
-
-                    <div
-                        className="simple-slider__items"
-                        ref={simpleSliderItems}
-                    >
-                        <div
-                            style={sliderTrackStyles}
-                            className="simple-slider__track"
+                        <button
+                            className='simple-slider__btn simple-slider__bnt--next'
+                            onClick={() => slideEventHandler({ type: "next", q: 1 })}
                         >
-                            {
-                                isPageLoaded
-                                &&
-                                Children.map(multiplyArray(children), Item => {
-                                    return <div
-                                        className='simple-slider__item'
-                                        key={nextId()}
-                                        style={{
-                                            width: (sliderItemsWidth / 2)
-                                        }}
-                                    >
-                                        {Item}
-                                    </div>
-                                })
-                            }
-                        </div>
-                    </div>
-
-                    <button
-                        className='simple-slider__bnt simple-slider__bnt--prev'
-                        onClick={() => slideEventHandler(-1)}
-                    >
-                        Previous
+                            Next
                     </button>
-                </div>
-            </section>
+
+                        <div
+                            className="simple-slider__items"
+                            ref={simpleSliderItems}
+                        >
+                            <div
+                                style={sliderTrackStyles}
+                                className="simple-slider__track"
+                            >
+                                {
+                                    isPageLoaded
+                                    &&
+                                    Children.map(multiplyArray(children), Item => {
+                                        return <div
+                                            className='simple-slider__item'
+                                            key={nextId()}
+                                            style={{
+                                                width: (sliderItemsWidth / 2)
+                                            }}
+                                        >
+                                            {Item}
+                                        </div>
+                                    })
+                                }
+                            </div>
+                        </div>
+
+                        <button
+                            className='simple-slider__bnt simple-slider__bnt--prev'
+                            onClick={() => slideEventHandler({ type: "prev", q: -1 })}
+                        >
+                            Previous
+                    </button>
+                    </div>
+                </section>
+            }
         </div>
     )
 }
