@@ -1,43 +1,37 @@
-.react-slider {
-    position: relative;
+.simple-slider {
     width: 100%;
 }
 
-.react-slider__inner {
+.simple-slider__inner {
     width: 100%;
+    // overflow: hidden;
+}
+
+.simple-slider__btn {
+
+    & .simple-slider__bnt--next {
+
+    }
+
+    & .simple-slider__bnt--prev {
+
+    }
+
+}
+
+.simple-slider__items {
+    background: teal;
     overflow: hidden;
 }
 
-.react-slider__track {
-    display: flex;
+.simple-slider__track {
+    text-align: center;
+    background: black;
+    min-height: 400px;
 }
 
-.react-slider-1{
-    height: 100px;
-    background: red;
-}
-
-.react-slider-2{
-    height: 100px;
-    background: green;
-}
-
-.react-slider-3{
-    height: 100px;
-    background: blue;
-}
-
-.react-slider-4{
-    height: 100px;
-    background: #3a4949;
-}
-
-.react-slider-5{
-    height: 100px;
-    background: violet;
-}
-
-.react-slider-6{
-    height: 100px;
-    background: turquoise;
+.simple-slider__item {
+    display: inline-block;
+    background-color: teal;
+    padding: 2px;
 }

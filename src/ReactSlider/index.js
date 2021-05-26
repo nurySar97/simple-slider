@@ -1,96 +1,126 @@
 import "./styles.scss";
-import React, { useEffect, useRef, useState } from 'react';
+import React, { Children, useCallback, useEffect, useRef, useState } from 'react';
+import nextId from "react-id-generator";
+
 let multiplyArray = array => [...array, ...array, ...array];
-let data = [1, 2, 3];
 
-const ReactSlider = () => {
-    let showItemCount = 3;
-    let Items = multiplyArray(data)
-    let count = data.length;
-    let [trackMoveSize, setTrackMoveSize] = useState(null);
-    let reactSliderInner = useRef(null);
-    let reactSliderItem = useRef(null);
-    let [loaded, setLoaded] = useState(false);
-    let counter = useRef(0);
-    let transition = useRef(`all .3s linear`);
+let transition = (s = 0) => `all ${s}ms linear`;
+let translateX = (value = 0) => `translateX(${value}px)`;
 
-    let onHandleLeftClick = () => {
-        if (counter.current === count) {
-            new Promise(resolve => {
-                transition.current = `all 0s linear`
-                setTrackMoveSize(-(reactSliderInner.current.clientWidth / showItemCount) * count)
-                resolve()
-            }).then(() => {
-                transition.current = `all .3s linear`
-                setTrackMoveSize(prevMove => prevMove + reactSliderInner.current.clientWidth / showItemCount)
-                counter.current = 1
-            })
-            return
+const ReactSlider = ({ children }) => {
+    const counter = useRef(0);
+    const simpleSliderItems = useRef(null);
+    const [isPageLoaded, setIsPageLoaded] = useState(false);
+    const [sliderItemsWidth, setSliderItemsWidth] = useState(0);
+    const [sliderTrackStyles, setSliderTrackStyles] = useState({});
+
+    const setHandleWidthToItems = useCallback(() => {
+        let _WIDTH = simpleSliderItems.current.clientWidth;
+
+        if (_WIDTH % 3 === 0) {
+            setSliderItemsWidth(_WIDTH);
+            setSliderTrackStyles(prev => ({
+                ...prev,
+                width: _WIDTH * 3,
+                transform: translateX(-_WIDTH),
+                count: -_WIDTH,
+                transition: transition()
+            }))
+        } else {
+            setSliderItemsWidth(_WIDTH - _WIDTH % 3);
+            setSliderTrackStyles(prev => ({
+                ...prev,
+                width: (_WIDTH - _WIDTH % 3) * 3,
+                transform: translateX(-(_WIDTH - _WIDTH % 3)),
+                count: -(_WIDTH - _WIDTH % 3),
+                transition: transition()
+            }))
         }
-        setTrackMoveSize(prevMove => prevMove + reactSliderInner.current.clientWidth / showItemCount)
-        counter.current = counter.current + 1
+    }, []);
+
+    const onNextHandleClick = () => {
+        
+        setSliderTrackStyles(prev => {
+            return ({
+                ...prev,
+                transform: translateX(prev.count + (sliderItemsWidth / 3)),
+                count: prev.count + (sliderItemsWidth / 3),
+                transition: transition(200)
+            })
+        })
+        ++counter.current
     }
 
-    let onHandleRightClick = () => {
-        if (counter.current === -count) {
-            new Promise(resolve => {
-                transition.current = `all 0s linear`
-                setTrackMoveSize(-(reactSliderInner.current.clientWidth / showItemCount) * count)
-                resolve()
-            }).then(() => {
-                transition.current = `all .3s linear`
-                setTrackMoveSize(prevMove => prevMove - reactSliderInner.current.clientWidth / showItemCount)
-                counter.current = -1
+    const onPrevHandleClick = () => {
+
+        setSliderTrackStyles(prev => {
+            return ({
+                ...prev,
+                transform: translateX(prev.count - (sliderItemsWidth / 3)),
+                count: prev.count - (sliderItemsWidth / 3),
+                transition: transition(200)
             })
-            return
-        }
-        setTrackMoveSize(prevMove => prevMove - reactSliderInner.current.clientWidth / showItemCount)
-        counter.current = counter.current - 1
+        })
+        --counter.current
     }
 
     useEffect(() => {
-        setTrackMoveSize(-(reactSliderInner.current.clientWidth / showItemCount) * count)
-        setLoaded(true)
-        window.addEventListener("resize", () => {
-            console.log(reactSliderInner.current.clientWidth)
-        })
-    }, [showItemCount, count])
+        setIsPageLoaded(() => true);
+        setHandleWidthToItems()
+
+        window.addEventListener("resize", setHandleWidthToItems);
+        return () => {
+            window.removeEventListener('resize', setHandleWidthToItems)
+        }
+    }, [setHandleWidthToItems]);
 
     return (
         <div className='container'>
-            <div className="react-slider">
-                <div className="react-slider__inner" ref={reactSliderInner} >
-                    {
-                        loaded && <div
-                            className="react-slider__track"
-                            style={{
-                                width: `${reactSliderInner.current.clientWidth / showItemCount * Items.length}px`,
-                                transform: `translateX(${trackMoveSize}px)`,
-                                transition: transition.current
-                            }}
+            <div className="simple-slider">
+                {sliderItemsWidth}
+                <div className="simple-slider__inner">
+
+                    <button 
+                        className='simple-slider__btn simple-slider__bnt--next'
+                        onClick={onNextHandleClick}
+                    >
+                        Next
+                    </button>
+
+                    <div
+                        className="simple-slider__items"
+                        ref={simpleSliderItems}
+                    >
+                        <div
+                            style={sliderTrackStyles}
+                            className="simple-slider__track"
                         >
                             {
-                                Items.map((item, index) => {
+                                isPageLoaded
+                                &&
+                                Children.map(multiplyArray(children), Item => {
                                     return <div
-                                        className={`react-slider-${item}`}
-                                        style={{ width: `${reactSliderInner.current.clientWidth / showItemCount}px` }}
-                                        key={index}
-                                        ref={reactSliderItem}
+                                        className='simple-slider__item'
+                                        key={nextId()}
+                                        style={{
+                                            width: (sliderItemsWidth / 3)
+                                        }}
                                     >
-                                        {item}
+                                        {Item}
                                     </div>
                                 })
                             }
                         </div>
-                    }
+                    </div>
+
+                    <button 
+                        className='simple-slider__bnt simple-slider__bnt--prev'
+                        onClick={onPrevHandleClick}
+                    >
+                        Previous
+                    </button>
                 </div>
             </div>
-            <button onClick={onHandleRightClick}>
-                {"<"}
-            </button>
-            <button onClick={onHandleLeftClick}>
-                {">"}
-            </button>
         </div>
     )
 }
