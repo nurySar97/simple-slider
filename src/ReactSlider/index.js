@@ -3,11 +3,10 @@ import React, { Children, useCallback, useEffect, useRef, useState } from 'react
 import nextId from "react-id-generator";
 
 let multiplyArray = array => [...array, ...array, ...array];
-
 let transition = (s = 0) => `all ${s}ms linear`;
 let translateX = (value = 0) => `translateX(${value}px)`;
 
-const ReactSlider = ({ children }) => {
+const ReactSlider = ({ children, showItemsCount }) => {
     const counter = useRef(0);
     const isBlocked = useRef(false);
     const simpleSliderItems = useRef(null);
@@ -16,96 +15,73 @@ const ReactSlider = ({ children }) => {
     const [sliderTrackStyles, setSliderTrackStyles] = useState({});
 
     const setHandleWidthToItems = useCallback(() => {
-        let _WIDTH = simpleSliderItems.current.clientWidth;
+        let _WHIDTH_SLIDER_ITEMS = simpleSliderItems.current.clientWidth;
+        let _TRANSFORM = -_WHIDTH_SLIDER_ITEMS + counter.current * (_WHIDTH_SLIDER_ITEMS/3);
 
-        if (_WIDTH % 3 === 0) {
-            setSliderItemsWidth(_WIDTH);
+        if (_WHIDTH_SLIDER_ITEMS % 3 === 0) {
+            setSliderItemsWidth(_WHIDTH_SLIDER_ITEMS);
             setSliderTrackStyles(prev => ({
                 ...prev,
-                width: _WIDTH * 3,
-                transform: translateX(-_WIDTH),
-                count: -_WIDTH,
+                width: _WHIDTH_SLIDER_ITEMS * 3,
+                transform: translateX(_TRANSFORM),
+                count: _TRANSFORM,
                 transition: transition()
             }))
-        } else {
-            setSliderItemsWidth(_WIDTH - _WIDTH % 3);
-            setSliderTrackStyles(prev => ({
-                ...prev,
-                width: (_WIDTH - _WIDTH % 3) * 3,
-                transform: translateX(-(_WIDTH - _WIDTH % 3)),
-                count: -(_WIDTH - _WIDTH % 3),
-                transition: transition()
-            }))
+            return
         }
+        _TRANSFORM = -(_WHIDTH_SLIDER_ITEMS - _WHIDTH_SLIDER_ITEMS % 3) + counter.current * (_WHIDTH_SLIDER_ITEMS - _WHIDTH_SLIDER_ITEMS % 3)/3;
+
+        setSliderItemsWidth(_WHIDTH_SLIDER_ITEMS - _WHIDTH_SLIDER_ITEMS % 3);
+        setSliderTrackStyles(prev => ({
+            ...prev,
+            width: (_WHIDTH_SLIDER_ITEMS - _WHIDTH_SLIDER_ITEMS % 3) * 3,
+            transform: translateX(_TRANSFORM),
+            count: _TRANSFORM,
+            transition: transition()
+        }))
     }, []);
 
-    const onNextHandleClick = () => {
+    const slideEventHandler = (q = 1) => {
         if (isBlocked.current) return;
-        isBlocked.current = true
+        isBlocked.current = true;
 
         setTimeout(() => {
-            isBlocked.current = false
-        }, 350)
+            isBlocked.current = false;
+        }, 330)
 
-        if (counter.current === 3) {
-            setHandleWidthToItems();
+        if (counter.current === q * 3) {
             counter.current = 0;
+            setHandleWidthToItems();
         }
 
         setTimeout(() => {
             setSliderTrackStyles(prev => ({
                 ...prev,
-                transform: translateX(prev.count + (sliderItemsWidth / 3)),
-                count: prev.count + (sliderItemsWidth / 3),
-                transition: transition(200)
+                transform: translateX(prev.count + q * (sliderItemsWidth / 3)),
+                count: prev.count + q * (sliderItemsWidth / 3),
+                transition: transition(300)
             }))
-            ++counter.current
-        }, 0)
-    }
-
-    const onPrevHandleClick = () => {
-        if (isBlocked.current) return;
-        isBlocked.current = true
-
-        setTimeout(() => {
-            isBlocked.current = false
-        }, 350)
-
-        if (counter.current === -3) {
-            setHandleWidthToItems();
-            counter.current = 0;
-        }
-
-        setTimeout(() => {
-            setSliderTrackStyles(prev => ({
-                ...prev,
-                transform: translateX(prev.count - (sliderItemsWidth / 3)),
-                count: prev.count - (sliderItemsWidth / 3),
-                transition: transition(200)
-            }))
-            --counter.current
-        }, 0)
+            counter.current = counter.current + q
+        }, 30)
     }
 
     useEffect(() => {
         setIsPageLoaded(() => true);
-        setHandleWidthToItems()
-
+        setHandleWidthToItems();
         window.addEventListener("resize", setHandleWidthToItems);
         return () => {
-            window.removeEventListener('resize', setHandleWidthToItems)
+            window.removeEventListener('resize', setHandleWidthToItems);
         }
     }, [setHandleWidthToItems]);
 
     return (
         <div className='container'>
-            <div className="simple-slider">
-                {sliderItemsWidth}
+            <section className="simple-slider">
                 <div className="simple-slider__inner">
 
                     <button
                         className='simple-slider__btn simple-slider__bnt--next'
-                        onClick={onNextHandleClick}
+                        onClick={() => slideEventHandler()}
                     >
                         Next
                     </button>
@@ -138,12 +114,12 @@ const ReactSlider = ({ children }) => {
 
                     <button
                         className='simple-slider__bnt simple-slider__bnt--prev'
-                        onClick={onPrevHandleClick}
+                        onClick={() => slideEventHandler(-1)}
                     >
                         Previous
                     </button>
                 </div>
-            </div>
+            </section>
         </div>
     )
 }
