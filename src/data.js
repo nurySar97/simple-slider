@@ -9,5 +9,5 @@ const data = [
     { id: 8, image: "https://mediumrare.imgix.net/1fbe2494643467b2abb270e83287e489f024b63c80df7ddac96974b49b3ecfe6?auto=compress&q=30&w=720&dpr=1.25" },
     { id: 9, image: "https://mediumrare.imgix.net/22884ee9a11daaf0066a89d0ac8e34113fe3962aee553a87eb7dfacbd5e5d60b?auto=compress&q=30&w=720&dpr=1.25" },
     { id: 10, image: "https://mediumrare.imgix.net/a2bc965d85f03ba0e8400ad4b52611e57586de720c67b2816d0c74c570c0c093?auto=compress&q=30&w=720&dpr=1.25" }
-]
+  ]
 export default data

@@ -19,19 +19,21 @@
 }
 
 .simple-slider__cards {
-    background: teal;
     overflow: hidden;
+    cursor: pointer;
 }
 
 .simple-slider__track {
     text-align: center;
-    background: black;
+    user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
 }
 
-.simple-slider__item {
+.simple-slider__card {
     display: inline-block;
-    background-color: teal;
     padding: 1px;
+    pointer-events: none;
 }
 
 .slider__img {
