@@ -8,33 +8,41 @@ export const _slideEventHandler = (
     setHandleAutoControl,
     setSliderTrackStyles,
     sliderCardsWidth,
-    COUNT_OF_CHILDS) => {
+    COUNT_OF_CHILDS,
+    prevSliderTrackStyles) => {
 
     if (isBlocked.current) return;
     isBlocked.current = true;
-    setTimeout(() => { isBlocked.current = false; }, 330)
+    setTimeout(() => { isBlocked.current = false; }, 220)
 
-    if (type === "next") {
-        if (counter.current === coef * (COUNT_OF_CHILDS - 1)) {
-            counter.current = -1;
-            setHandleAutoControl();
+    counter.current = counter.current + coef;
+
+    setSliderTrackStyles(prev => {
+        let _TRANSFORM = prevSliderTrackStyles
+            ? prevSliderTrackStyles.current.transformValue + coef * (sliderCardsWidth / 2)
+            : prev.transformValue + coef * (sliderCardsWidth / 2)
+
+        return {
+            ...prev,
+            transform: translateX(_TRANSFORM),
+            transformValue: _TRANSFORM,
+            transition: transition(200)
         }
-    } else {
-        if (counter.current === coef * COUNT_OF_CHILDS) {
-            counter.current = 0;
-            setHandleAutoControl();
-        }
-    }
+    });
 
     setTimeout(() => {
-        setSliderTrackStyles(prev => ({
-            ...prev,
-            transform: translateX(prev.transformValue + coef * (sliderCardsWidth / 2)),
-            transformValue: prev.transformValue + coef * (sliderCardsWidth / 2),
-            transition: transition(250)
-        }))
-        counter.current = counter.current + coef
-    }, 30)
+        if (type === "next") {
+            if (counter.current === coef * (COUNT_OF_CHILDS)) {
+                counter.current = 0;
+                setHandleAutoControl();
+            }
+        } else {
+            if (counter.current === coef * COUNT_OF_CHILDS) {
+                counter.current = 0;
+                setHandleAutoControl();
+            }
+        }
+    }, 210)
 
 }
 
@@ -44,33 +52,40 @@ export const _setHandleAutoControl = (
     sliderCards,
     COUNT_OF_CHILDS,
     setSliderCardsWidth,
-    setSliderTrackStyles
+    setSliderTrackStyles,
+    prevSliderTrackStyles
 ) => {
-    let _SLIDER_CARDS_WIDTH = sliderCards.current.clientWidth;
-    let _TRANSFORM = _SLIDER_CARDS_WIDTH / 2 * (-COUNT_OF_CHILDS * 2 + counter.current + 1 / 2);
+    let { current: {
+        clientWidth: _SLIDER_CARDS_WIDTH
+    } } = sliderCards;
+    let _TRANSFORM = _SLIDER_CARDS_WIDTH / 2 * (counter.current + 1 / 2 - COUNT_OF_CHILDS * 2);
     let _REMAINDER = _SLIDER_CARDS_WIDTH % 2;
 
     if (_REMAINDER === 0) {
         setSliderCardsWidth(_SLIDER_CARDS_WIDTH);
-        setSliderTrackStyles(prev => ({
-            ...prev,
+
+        prevSliderTrackStyles.current = {
             width: (_SLIDER_CARDS_WIDTH / 2) * COUNT_OF_CHILDS * 5,
             transform: translateX(_TRANSFORM),
             transformValue: _TRANSFORM,
             transition: transition()
-        }))
+        };
+
+        setSliderTrackStyles(() => prevSliderTrackStyles.current);
         return
     }
 
     let _SLIDER_CARDS_ROUNDED_WIDTH = (_SLIDER_CARDS_WIDTH - _REMAINDER) / 2;
     _TRANSFORM = _SLIDER_CARDS_ROUNDED_WIDTH * (-COUNT_OF_CHILDS * 2 + counter.current + 1 / 2);
 
-    setSliderCardsWidth(_SLIDER_CARDS_ROUNDED_WIDTH * 2);
-    setSliderTrackStyles(prev => ({
-        ...prev,
+    prevSliderTrackStyles.current = {
         width: _SLIDER_CARDS_ROUNDED_WIDTH * COUNT_OF_CHILDS * 5,
         transform: translateX(_TRANSFORM),
         transformValue: _TRANSFORM,
         transition: transition()
-    }))
+    }
+
+    setSliderCardsWidth(_SLIDER_CARDS_ROUNDED_WIDTH * 2);
+    setSliderTrackStyles(() => prevSliderTrackStyles.current)
 }
+

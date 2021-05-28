@@ -1,22 +1,16 @@
 import "./styles.scss";
-import React, {
-    Children,
-    useCallback,
-    useEffect,
-    useRef,
-    useState
-} from 'react';
-import {
-    _setHandleAutoControl,
-    _slideEventHandler
-} from "./functions";
-import { multiplyArray, transition, translateX } from "./utils";
-import nextId from "react-id-generator";
+import { multiplyArray } from "./utils";
+import { keyGenerator } from "./utils/keyGenerator";
+import { _setHandleAutoControl, _slideEventHandler } from "./functions";
+import React, { Children, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { _onHandleMouseDown, _onHandleMouseMove, _onHandleMouseUp, _onHandleTouchMove, _onHandleTouchStart } from "./functions/eventHandlers";
 
 
-const SimpleSlider = ({ children, showItemsCount }) => {
+const SimpleSlider = ({ children }) => {
     // Variables start
-    const COUNT_OF_CHILDS = children?.length;
+    const COUNT_OF_CHILDS = children?.length || 0;
+    let memorizedChilds = useMemo(() => children && multiplyArray(children), [children]);
+    let memorizedKeys = useMemo(() => keyGenerator(COUNT_OF_CHILDS), [COUNT_OF_CHILDS]);
     const memory = useRef({
         MOUSE_DOWN_X: 0,
         MOUSE_MOVE_X: 0,
@@ -24,25 +18,28 @@ const SimpleSlider = ({ children, showItemsCount }) => {
     });
     const counter = useRef(0);
     const isBlocked = useRef(false);
-    const [isLoaded, setIsLoaded] = useState(false);
     const sliderCards = useRef(null);
     const sliderTrack = useRef(null);
+    const prevSliderTrackStyles = useRef({});
+    const [isLoaded, setIsLoaded] = useState(false);
     const [sliderCardsWidth, setSliderCardsWidth] = useState(0);
     const [sliderTrackStyles, setSliderTrackStyles] = useState({});
     // Variables End
 
+    // RETURN DEFAULT
     const setHandleAutoControl = useCallback(() => {
         _setHandleAutoControl(
             counter,
             sliderCards,
             COUNT_OF_CHILDS,
             setSliderCardsWidth,
-            setSliderTrackStyles
+            setSliderTrackStyles,
+            prevSliderTrackStyles
         )
     }, [COUNT_OF_CHILDS]);
 
-
-    const slideEventHandler = useCallback(({ type, coefficient: coef }) => {
+    // BUTTON HANDLER 
+    const slideEventHandler = useCallback(({ type, coefficient: coef }, prevSliderTrackStyles) => {
         _slideEventHandler(
             type,
             coef,
@@ -51,42 +48,74 @@ const SimpleSlider = ({ children, showItemsCount }) => {
             setHandleAutoControl,
             setSliderTrackStyles,
             sliderCardsWidth,
-            COUNT_OF_CHILDS
+            COUNT_OF_CHILDS,
+            prevSliderTrackStyles
         )
-    })
+    }, [COUNT_OF_CHILDS, sliderCardsWidth, setHandleAutoControl])
 
-
-    const onHandleMouseMove = ({ clientX }) => {
-        setSliderTrackStyles(prev => {
-            return {
-                ...prev,
-                transform: translateX(clientX - memory.current['MOUSE_DOWN_X']),
-                transformValue: clientX - memory.current['MOUSE_DOWN_X'],
-                transition: transition()
-            }
-        })
-
-    }
-
-
-    const onHandleMouseOut = () => {
+    // MOUSE OUT
+    const onHandleMouseOut = ({ clientX }) => {
         sliderTrack.current.onmousemove = () => null;
     }
 
-
+    // MOUSE DOWN
     const onHandleMouseDown = ({ clientX }) => {
-        sliderTrack.current.onmousemove = e => onHandleMouseMove(e);
-
-
-        memory.current['MOUSE_DOWN_X'] = clientX - sliderTrackStyles.transformValue;
-        memory.current['MOUSE_DOWN_CLIENT_X'] = clientX;
+        _onHandleMouseDown(
+            clientX,
+            prevSliderTrackStyles,
+            sliderTrackStyles,
+            sliderTrack,
+            onHandleMouseMove,
+            memory
+        )
     }
 
-
-    const onHandleMouseUp = () => {
-        sliderTrack.current.onmousemove = () => null;
+    // MOUSE MOVE
+    function onHandleMouseMove({ clientX }) {
+        _onHandleMouseMove(
+            clientX,
+            setSliderTrackStyles,
+            memory
+        )
     }
 
+    // MOUSE UP
+    const onHandleMouseUp = ({ clientX }) => {
+        _onHandleMouseUp(
+            clientX,
+            memory,
+            sliderCardsWidth,
+            slideEventHandler,
+            setSliderTrackStyles,
+            prevSliderTrackStyles,
+            sliderTrack
+        )
+    }
+
+    // TOUCH START
+    const onHandleTouchStart = e => {
+        _onHandleTouchStart(
+            e,
+            sliderTrack,
+            onHandleTouchMove,
+            memory,
+            sliderTrackStyles
+        )
+    }
+
+    // TOUCH MOVE
+    function onHandleTouchMove(e) {
+        _onHandleTouchMove(
+            e,
+            setSliderTrackStyles,
+            memory
+        )
+    }
+
+    // TOUCH END
+    const onHandleTouchEnd = () => {
+        sliderTrack.current.ontouchmove = () => null;
+    }
 
     useEffect(() => {
         if (children) {
@@ -99,7 +128,6 @@ const SimpleSlider = ({ children, showItemsCount }) => {
             }
         }
     }, [setHandleAutoControl, children]);
-
 
     return (
         <div className='container'>
@@ -127,17 +155,18 @@ const SimpleSlider = ({ children, showItemsCount }) => {
                                 onMouseDown={onHandleMouseDown}
                                 onMouseUp={onHandleMouseUp}
                                 onMouseOut={onHandleMouseOut}
+                                onTouchStart={onHandleTouchStart}
+                                onTouchEnd={onHandleTouchEnd}
+
                             >
                                 {
                                     isLoaded
                                     &&
-                                    Children.map(multiplyArray(children), Item => {
+                                    Children.map(memorizedChilds, (Item, index) => {
                                         return <div
                                             className='simple-slider__card'
-                                            key={nextId()}
-                                            style={{
-                                                width: (sliderCardsWidth / 2)
-                                            }}
+                                            key={memorizedKeys[index]}
+                                            style={{ width: (sliderCardsWidth / 2) }}
                                         >
                                             {Item}
                                         </div>
