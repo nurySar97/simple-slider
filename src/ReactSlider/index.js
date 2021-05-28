@@ -3,10 +3,21 @@ import { multiplyArray } from "./utils";
 import { keyGenerator } from "./utils/keyGenerator";
 import { _setHandleAutoControl, _slideEventHandler } from "./functions";
 import React, { Children, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { _onHandleMouseDown, _onHandleMouseMove, _onHandleMouseUp, _onHandleTouchMove, _onHandleTouchStart } from "./functions/eventHandlers";
+import {
+    _onHandleMouseDown,
+    _onHandleMouseMove,
+    _onHandleMouseUp,
+    _onHandleTouchEnd,
+    _onHandleTouchMove,
+    _onHandleTouchStart
+} from "./functions/eventHandlers";
 
-
-const SimpleSlider = ({ children }) => {
+const SimpleSlider = ({
+    children,
+    direction = "left",
+    frequency = 0
+}) => {
+    let freq = (frequency === 0) ? 0 : (frequency < 300) ? 300 : frequency;
     // Variables start
     const COUNT_OF_CHILDS = children?.length || 0;
     let memorizedChilds = useMemo(() => children && multiplyArray(children), [children]);
@@ -24,6 +35,7 @@ const SimpleSlider = ({ children }) => {
     const [isLoaded, setIsLoaded] = useState(false);
     const [sliderCardsWidth, setSliderCardsWidth] = useState(0);
     const [sliderTrackStyles, setSliderTrackStyles] = useState({});
+    const interval = useRef(null);
     // Variables End
 
     // RETURN DEFAULT
@@ -51,15 +63,25 @@ const SimpleSlider = ({ children }) => {
             COUNT_OF_CHILDS,
             prevSliderTrackStyles
         )
-    }, [COUNT_OF_CHILDS, sliderCardsWidth, setHandleAutoControl])
+    }, [COUNT_OF_CHILDS, sliderCardsWidth, setHandleAutoControl]);
 
     // MOUSE OUT
     const onHandleMouseOut = ({ clientX }) => {
+        _onHandleMouseUp(
+            clientX,
+            memory,
+            sliderCardsWidth,
+            slideEventHandler,
+            setSliderTrackStyles,
+            prevSliderTrackStyles,
+            sliderTrack
+        )
         sliderTrack.current.onmousemove = () => null;
     }
 
     // MOUSE DOWN
     const onHandleMouseDown = ({ clientX }) => {
+        sliderTrack.current.onmouseout = e => onHandleMouseOut(e);
         _onHandleMouseDown(
             clientX,
             prevSliderTrackStyles,
@@ -72,15 +94,12 @@ const SimpleSlider = ({ children }) => {
 
     // MOUSE MOVE
     function onHandleMouseMove({ clientX }) {
-        _onHandleMouseMove(
-            clientX,
-            setSliderTrackStyles,
-            memory
-        )
+        _onHandleMouseMove(clientX, setSliderTrackStyles, memory)
     }
 
     // MOUSE UP
-    const onHandleMouseUp = ({ clientX }) => {
+    const onHandleMouseUp = useCallback(({ clientX }) => {
+        sliderTrack.current.onmouseout = e => null;
         _onHandleMouseUp(
             clientX,
             memory,
@@ -90,7 +109,7 @@ const SimpleSlider = ({ children }) => {
             prevSliderTrackStyles,
             sliderTrack
         )
-    }
+    }, [slideEventHandler, sliderCardsWidth]);
 
     // TOUCH START
     const onHandleTouchStart = e => {
@@ -99,22 +118,27 @@ const SimpleSlider = ({ children }) => {
             sliderTrack,
             onHandleTouchMove,
             memory,
-            sliderTrackStyles
+            sliderTrackStyles,
+            prevSliderTrackStyles
         )
     }
 
     // TOUCH MOVE
     function onHandleTouchMove(e) {
-        _onHandleTouchMove(
-            e,
-            setSliderTrackStyles,
-            memory
-        )
+        _onHandleTouchMove(e, setSliderTrackStyles, memory)
     }
 
     // TOUCH END
-    const onHandleTouchEnd = () => {
-        sliderTrack.current.ontouchmove = () => null;
+    const onHandleTouchEnd = (e) => {
+        _onHandleTouchEnd(
+            e,
+            sliderTrack,
+            memory,
+            sliderCardsWidth,
+            slideEventHandler,
+            setSliderTrackStyles,
+            prevSliderTrackStyles
+        )
     }
 
     useEffect(() => {
@@ -128,6 +152,20 @@ const SimpleSlider = ({ children }) => {
             }
         }
     }, [setHandleAutoControl, children]);
+
+    useEffect(() => {
+        interval.current = setInterval(() => {
+            if (freq !== 0) {
+                slideEventHandler(
+                    direction === "left"
+                        ? ({ type: "prev", coefficient: -1 })
+                        : ({ type: "next", coefficient: 1 })
+                )
+            }
+        }, freq)
+
+        return () => clearInterval(interval.current);
+    }, [slideEventHandler, freq, direction]);
 
     return (
         <div className='container'>
@@ -154,7 +192,6 @@ const SimpleSlider = ({ children }) => {
                                 ref={sliderTrack}
                                 onMouseDown={onHandleMouseDown}
                                 onMouseUp={onHandleMouseUp}
-                                onMouseOut={onHandleMouseOut}
                                 onTouchStart={onHandleTouchStart}
                                 onTouchEnd={onHandleTouchEnd}
 

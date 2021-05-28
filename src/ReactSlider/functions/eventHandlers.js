@@ -51,7 +51,7 @@ export const _onHandleMouseUp = (
             setSliderTrackStyles({ ...prevSliderTrackStyles.current, transition: transition(200) });
         }
     } else {
-        if (_DIFERENCE < sliderCardsWidth / 4) {
+        if (_DIFERENCE < -sliderCardsWidth / 4) {
             slideEventHandler({ type: "prev", coefficient: -1 }, prevSliderTrackStyles);
         } else {
             setSliderTrackStyles({ ...prevSliderTrackStyles.current, transition: transition(200) });
@@ -66,11 +66,14 @@ export const _onHandleTouchStart = (
     sliderTrack,
     onHandleTouchMove,
     memory,
-    sliderTrackStyles
+    sliderTrackStyles,
+    prevSliderTrackStyles
 ) => {
+    prevSliderTrackStyles.current = sliderTrackStyles;
     const clientX = (e.changedTouches[0].clientX);
-    sliderTrack.current.ontouchmove = e => onHandleTouchMove(e);
     memory.current['MOUSE_DOWN_X'] = clientX - sliderTrackStyles.transformValue;
+    memory.current['MOUSE_DOWN_CLIENT_X'] = clientX;
+    sliderTrack.current.ontouchmove = e => onHandleTouchMove(e);
 }
 
 
@@ -89,4 +92,33 @@ export const _onHandleTouchMove = (
             transition: transition()
         }
     })
+}
+
+export const _onHandleTouchEnd = (
+    e,
+    sliderTrack,
+    memory,
+    sliderCardsWidth,
+    slideEventHandler,
+    setSliderTrackStyles,
+    prevSliderTrackStyles
+) => {
+    const clientX = (e.changedTouches[0].clientX);
+    const _DIFERENCE = clientX - memory.current['MOUSE_DOWN_CLIENT_X'];
+
+    if (_DIFERENCE > 0) {
+        if (_DIFERENCE > sliderCardsWidth / 4) {
+            slideEventHandler({ type: "next", coefficient: 1 }, prevSliderTrackStyles);
+        } else {
+            setSliderTrackStyles({ ...prevSliderTrackStyles.current, transition: transition(200) });
+        }
+    } else {
+        if (_DIFERENCE < -sliderCardsWidth / 4) {
+            slideEventHandler({ type: "prev", coefficient: -1 }, prevSliderTrackStyles);
+        } else {
+            setSliderTrackStyles({ ...prevSliderTrackStyles.current, transition: transition(200) });
+        }
+    }
+
+    sliderTrack.current.ontouchmove = () => null;
 }

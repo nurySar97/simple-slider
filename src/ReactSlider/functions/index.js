@@ -86,6 +86,5 @@ export const _setHandleAutoControl = (
     }
 
     setSliderCardsWidth(_SLIDER_CARDS_ROUNDED_WIDTH * 2);
-    setSliderTrackStyles(() => prevSliderTrackStyles.current)
+    setSliderTrackStyles(() => prevSliderTrackStyles.current);
 }
-
