@@ -8,21 +8,19 @@ export const useScreenSize = () => {
   useEffect(() => {
     subscribe(onSizeChanged);
 
-    return () =>  unsubscribe(onSizeChanged);
+    return () => unsubscribe(onSizeChanged);
   }, [onSizeChanged]);
 
   return screenSize;
 };
 
 let handlers = [];
-const xSmallMedia = matchMedia('(max-width: 425px)');
-const smallMedia = matchMedia('(max-width: 767px)');
-const mediumMedia = matchMedia('(min-width: 768px) and (max-width: 1024px)');
-const largeMedia = matchMedia('(min-width: 1025px)');
+const smallMedia = matchMedia('(min-width: 0px) and (max-width: 767px)');
+const largeMedia = matchMedia('(min-width: 768px)');
 
 const onScreenSizeChange = event => event.matches && handlers.forEach(handler => handler());
 
-[xSmallMedia, smallMedia, mediumMedia, largeMedia].forEach(media => media.addListener(onScreenSizeChange));
+[smallMedia, largeMedia].forEach(media => media.addListener(onScreenSizeChange));
 
 const subscribe = handler => handlers.push(handler);
 
@@ -30,9 +28,7 @@ const unsubscribe = handler => handlers = handlers.filter(item => item !== handl
 
 function getScreenSize() {
   return {
-    isXSmall: xSmallMedia.matches,
     isSmall: smallMedia.matches,
-    isMedium: mediumMedia.matches,
     isLarge: largeMedia.matches
   };
 };

@@ -12,10 +12,9 @@ export const _slideEventHandler = (
     speed,
     slidesToShow
 ) => {
-
     if (isBlocked.current) return;
     isBlocked.current = true;
-    setTimeout(() => { isBlocked.current = false; }, speed * 1.1)
+    setTimeout(() => { isBlocked.current = false; }, speed* 1.06);
 
     counter.current = counter.current + coefficient;
 
@@ -50,13 +49,13 @@ export const _setHandleAutoControl = (
     setSliderTrackStyles,
     prevSliderTrackStyles,
     slidesToShow,
-    isSmall
+    moveLeft
 ) => {
     let { current: {
         clientWidth: _SLIDER_CARDS_WIDTH
     } } = sliderCards;
-    let MOVE_LEFT = isSmall ? 0 : 1/2
-    let _TRANSFORM = _SLIDER_CARDS_WIDTH / slidesToShow * (counter.current - COUNT_OF_CHILDS * 2 + MOVE_LEFT);
+    
+    let _TRANSFORM = (_SLIDER_CARDS_WIDTH) / slidesToShow * (counter.current - COUNT_OF_CHILDS * 2 + moveLeft);
     let _REMAINDER = _SLIDER_CARDS_WIDTH % slidesToShow;
 
     if (_REMAINDER === 0) {
@@ -74,7 +73,7 @@ export const _setHandleAutoControl = (
     }
 
     let _SLIDER_CARDS_ROUNDED_WIDTH = (_SLIDER_CARDS_WIDTH - _REMAINDER) / slidesToShow;
-    _TRANSFORM = _SLIDER_CARDS_ROUNDED_WIDTH * (-COUNT_OF_CHILDS * 2 + counter.current + MOVE_LEFT);
+    _TRANSFORM = _SLIDER_CARDS_ROUNDED_WIDTH * (-COUNT_OF_CHILDS * 2 + counter.current + moveLeft);
 
     prevSliderTrackStyles.current = {
         width: _SLIDER_CARDS_ROUNDED_WIDTH * COUNT_OF_CHILDS * 5,

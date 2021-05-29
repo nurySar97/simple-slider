@@ -12,7 +12,10 @@ export const _onHandleMouseDown = (
     prevSliderTrackStyles.current = sliderTrackStyles;
     memory.current['MOUSE_DOWN_X'] = clientX - sliderTrackStyles.transformValue;
     memory.current['MOUSE_DOWN_CLIENT_X'] = clientX;
-    sliderTrack.current.onmousemove = e => onHandleMouseMove(e);
+    sliderTrack.current.onmousemove = e => {
+        e.preventDefault()
+        onHandleMouseMove(e)
+    };
 }
 
 

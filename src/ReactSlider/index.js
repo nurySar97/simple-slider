@@ -2,7 +2,7 @@ import "./styles.scss";
 import { multiplyArray } from "./utils";
 import { keyGenerator } from "./utils/keyGenerator";
 import { _setHandleAutoControl, _slideEventHandler } from "./functions";
-import React, { Children, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { Children, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
     _onHandleMouseDown,
     _onHandleMouseMove,
@@ -13,7 +13,7 @@ import {
 } from "./functions/eventHandlers";
 import { useScreenSize } from "./utils/useScreen";
 
-const SimpleSlider = ({
+const SimpleSlider = memo(({
     children,
     direction = "left",
     frequency = 0,
@@ -21,6 +21,7 @@ const SimpleSlider = ({
 }) => {
     const { isSmall } = useScreenSize();
     let slidesToShow = isSmall ? 1 : 2;
+    let moveLeft = isSmall ? 0 : 1 / 2;
     let FREQUENCY = frequency === 0 ? 0 : (frequency < 300) ? 300 : frequency;
     // Variables start
     const COUNT_OF_CHILDS = children?.length || 0;
@@ -36,12 +37,9 @@ const SimpleSlider = ({
     const sliderCards = useRef(null);
     const sliderTrack = useRef(null);
     const prevSliderTrackStyles = useRef({});
-    const [isLoaded, setIsLoaded] = useState(false);
     const [sliderCardsWidth, setSliderCardsWidth] = useState(0);
     const [sliderTrackStyles, setSliderTrackStyles] = useState({});
     const interval = useRef(null);
-
-
     // Variables End
 
     // RETURN DEFAULT
@@ -54,9 +52,9 @@ const SimpleSlider = ({
             setSliderTrackStyles,
             prevSliderTrackStyles,
             slidesToShow,
-            isSmall
+            moveLeft
         )
-    }, [COUNT_OF_CHILDS, slidesToShow, isSmall]);
+    }, [COUNT_OF_CHILDS, slidesToShow, moveLeft]);
 
     // BUTTON HANDLER 
     const slideEventHandler = useCallback((coefficient, prevSliderTrackStyles, speed) => {
@@ -108,7 +106,8 @@ const SimpleSlider = ({
             slideEventHandler,
             setSliderTrackStyles,
             prevSliderTrackStyles,
-            sliderTrack, 200
+            sliderTrack,
+            200
         );
     }, [slideEventHandler, sliderCardsWidth]);
 
@@ -143,9 +142,14 @@ const SimpleSlider = ({
         )
     }
 
+    const onHandleCardClick = (e, index) => {
+        e.stopPropagation();
+        (index + 1 === COUNT_OF_CHILDS * 2 - counter.current) && slideEventHandler(1, null, speed);
+        (index + 1 === (COUNT_OF_CHILDS * 2 + 2) - counter.current) && slideEventHandler(-1, null, speed);
+    }
+
     useEffect(() => {
         if (children) {
-            setIsLoaded(() => true);
             setHandleAutoControl();
             window.addEventListener("resize", setHandleAutoControl);
 
@@ -172,10 +176,14 @@ const SimpleSlider = ({
                     <div className="simple-slider__inner">
 
                         <button
-                            className='simple-slider__btn simple-slider__bnt--next'
+                            className='simple-slider__btn simple-slider__btn--next'
                             onClick={() => slideEventHandler(1, null, speed)}
+                            style={isSmall ? { display: "none" } : ({
+                                left: sliderCardsWidth / slidesToShow / 2 - 80,
+                                top: sliderCardsWidth / slidesToShow / 4 - 12
+                            })}
                         >
-                            Next
+                            {"<"}
                         </button>
 
                         <div
@@ -183,18 +191,11 @@ const SimpleSlider = ({
                             ref={sliderCards}
                         >
                             <div
-                                style={sliderTrackStyles}
                                 className="simple-slider__track"
+                                style={sliderTrackStyles}
                                 ref={sliderTrack}
-                                onMouseDown={onHandleMouseDown}
-                                onMouseUp={onHandleMouseUp}
-                                onTouchStart={onHandleTouchStart}
-                                onTouchEnd={onHandleTouchEnd}
-
                             >
                                 {
-                                    isLoaded
-                                    &&
                                     Children.map(memorizedChilds, (Item, index) => {
                                         return <div
                                             className='simple-slider__card'
@@ -203,19 +204,35 @@ const SimpleSlider = ({
                                                 width: sliderCardsWidth / slidesToShow,
                                                 height: sliderCardsWidth / (slidesToShow) / 2
                                             }}
+                                            onClick={e => onHandleCardClick(e, index)}
+                                            onMouseDown={e => {
+                                                e.preventDefault()
+                                                onHandleMouseDown(e)
+                                            }}
+                                            onMouseUp={e => {
+                                                e.preventDefault()
+                                                onHandleMouseUp(e)
+                                            }}
+                                            onTouchStart={onHandleTouchStart}
+                                            onTouchEnd={onHandleTouchEnd}
                                         >
                                             {Item}
                                         </div>
                                     })
                                 }
                             </div>
+
                         </div>
 
                         <button
-                            className='simple-slider__bnt simple-slider__bnt--prev'
+                            className='simple-slider__btn simple-slider__btn--prev'
                             onClick={() => slideEventHandler(-1, null, speed)}
+                            style={isSmall ? { display: "none" } : {
+                                right: sliderCardsWidth / slidesToShow / 2 - 80,
+                                top: sliderCardsWidth / slidesToShow / 4 - 12
+                            }}
                         >
-                            Previous
+                            {">"}
                         </button>
 
                     </div>
@@ -223,6 +240,6 @@ const SimpleSlider = ({
             }
         </div>
     )
-}
+})
 
 export default SimpleSlider;
