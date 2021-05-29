@@ -22,10 +22,11 @@ export const _onHandleMouseMove = (
     memory
 ) => {
     setSliderTrackStyles(prev => {
+        let _TRANSFORM = clientX - memory.current['MOUSE_DOWN_X'];
         return {
             ...prev,
-            transform: translateX(clientX - memory.current['MOUSE_DOWN_X']),
-            transformValue: clientX - memory.current['MOUSE_DOWN_X'],
+            transform: translateX(_TRANSFORM),
+            transformValue: _TRANSFORM,
             transition: transition()
         }
     })
@@ -40,23 +41,19 @@ export const _onHandleMouseUp = (
     slideEventHandler,
     setSliderTrackStyles,
     prevSliderTrackStyles,
-    sliderTrack
+    sliderTrack,
+    speed
 ) => {
     const _DIFERENCE = clientX - memory.current['MOUSE_DOWN_CLIENT_X'];
 
-    if (_DIFERENCE > 0) {
-        if (_DIFERENCE > sliderCardsWidth / 4) {
-            slideEventHandler({ type: "next", coefficient: 1 }, prevSliderTrackStyles);
-        } else {
-            setSliderTrackStyles({ ...prevSliderTrackStyles.current, transition: transition(200) });
-        }
-    } else {
-        if (_DIFERENCE < -sliderCardsWidth / 4) {
-            slideEventHandler({ type: "prev", coefficient: -1 }, prevSliderTrackStyles);
-        } else {
-            setSliderTrackStyles({ ...prevSliderTrackStyles.current, transition: transition(200) });
-        }
-    }
+    _autoTouchAndMoveController(
+        _DIFERENCE,
+        sliderCardsWidth,
+        slideEventHandler,
+        () => _setTransition(setSliderTrackStyles, prevSliderTrackStyles, speed),
+        prevSliderTrackStyles,
+        speed
+    )
     sliderTrack.current.onmousemove = () => null;
 }
 
@@ -94,6 +91,7 @@ export const _onHandleTouchMove = (
     })
 }
 
+
 export const _onHandleTouchEnd = (
     e,
     sliderTrack,
@@ -101,24 +99,54 @@ export const _onHandleTouchEnd = (
     sliderCardsWidth,
     slideEventHandler,
     setSliderTrackStyles,
-    prevSliderTrackStyles
+    prevSliderTrackStyles,
+    speed
 ) => {
     const clientX = (e.changedTouches[0].clientX);
     const _DIFERENCE = clientX - memory.current['MOUSE_DOWN_CLIENT_X'];
 
-    if (_DIFERENCE > 0) {
-        if (_DIFERENCE > sliderCardsWidth / 4) {
-            slideEventHandler({ type: "next", coefficient: 1 }, prevSliderTrackStyles);
-        } else {
-            setSliderTrackStyles({ ...prevSliderTrackStyles.current, transition: transition(200) });
-        }
-    } else {
-        if (_DIFERENCE < -sliderCardsWidth / 4) {
-            slideEventHandler({ type: "prev", coefficient: -1 }, prevSliderTrackStyles);
-        } else {
-            setSliderTrackStyles({ ...prevSliderTrackStyles.current, transition: transition(200) });
-        }
-    }
+    _autoTouchAndMoveController(
+        _DIFERENCE,
+        sliderCardsWidth,
+        slideEventHandler,
+        () => _setTransition(setSliderTrackStyles, prevSliderTrackStyles, speed),
+        prevSliderTrackStyles,
+        speed
+    )
 
     sliderTrack.current.ontouchmove = () => null;
+}
+
+
+function _autoTouchAndMoveController(
+    _DIFERENCE,
+    sliderCardsWidth,
+    slideEventHandler,
+    setTransition,
+    prevSliderTrackStyles,
+    speed
+) {
+    (_DIFERENCE > 0
+        ?
+        _DIFERENCE > sliderCardsWidth / 4
+            ? slideEventHandler(1, prevSliderTrackStyles, speed)
+            : setTransition()
+
+        :
+        _DIFERENCE < -sliderCardsWidth / 4
+            ? slideEventHandler(-1, prevSliderTrackStyles, speed)
+            : setTransition()
+    );
+}
+
+
+function _setTransition(
+    setSliderTrackStyles,
+    prevSliderTrackStyles,
+    speed
+) {
+    setSliderTrackStyles({
+        ...prevSliderTrackStyles.current,
+        transition: transition(speed)
+    })
 }

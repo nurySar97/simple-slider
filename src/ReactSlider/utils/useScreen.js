@@ -1,15 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 const { matchMedia } = window;
 
 export const useScreenSize = () => {
   const [screenSize, setScreenSize] = useState(getScreenSize());
-  const onSizeChanged = () => setScreenSize(getScreenSize());
+  const onSizeChanged = useCallback(() => setScreenSize(getScreenSize()), [setScreenSize]);
 
   useEffect(() => {
     subscribe(onSizeChanged);
-    return () => {
-      unsubscribe(onSizeChanged);
-    };
+
+    return () =>  unsubscribe(onSizeChanged);
   }, [onSizeChanged]);
 
   return screenSize;
@@ -17,8 +16,8 @@ export const useScreenSize = () => {
 
 let handlers = [];
 const xSmallMedia = matchMedia('(max-width: 425px)');
-const smallMedia = matchMedia('(min-width: 426px) and (max-width: 768px)');
-const mediumMedia = matchMedia('(min-width: 769px) and (max-width: 1024px)');
+const smallMedia = matchMedia('(max-width: 767px)');
+const mediumMedia = matchMedia('(min-width: 768px) and (max-width: 1024px)');
 const largeMedia = matchMedia('(min-width: 1025px)');
 
 const onScreenSizeChange = event => event.matches && handlers.forEach(handler => handler());

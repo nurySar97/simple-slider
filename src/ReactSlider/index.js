@@ -11,13 +11,17 @@ import {
     _onHandleTouchMove,
     _onHandleTouchStart
 } from "./functions/eventHandlers";
+import { useScreenSize } from "./utils/useScreen";
 
 const SimpleSlider = ({
     children,
     direction = "left",
-    frequency = 0
+    frequency = 0,
+    speed = 200
 }) => {
-    let freq = (frequency === 0) ? 0 : (frequency < 300) ? 300 : frequency;
+    const { isSmall } = useScreenSize();
+    let slidesToShow = isSmall ? 1 : 2;
+    let FREQUENCY = frequency === 0 ? 0 : (frequency < 300) ? 300 : frequency;
     // Variables start
     const COUNT_OF_CHILDS = children?.length || 0;
     let memorizedChilds = useMemo(() => children && multiplyArray(children), [children]);
@@ -36,6 +40,8 @@ const SimpleSlider = ({
     const [sliderCardsWidth, setSliderCardsWidth] = useState(0);
     const [sliderTrackStyles, setSliderTrackStyles] = useState({});
     const interval = useRef(null);
+
+
     // Variables End
 
     // RETURN DEFAULT
@@ -46,36 +52,31 @@ const SimpleSlider = ({
             COUNT_OF_CHILDS,
             setSliderCardsWidth,
             setSliderTrackStyles,
-            prevSliderTrackStyles
+            prevSliderTrackStyles,
+            slidesToShow,
+            isSmall
         )
-    }, [COUNT_OF_CHILDS]);
+    }, [COUNT_OF_CHILDS, slidesToShow, isSmall]);
 
     // BUTTON HANDLER 
-    const slideEventHandler = useCallback(({ type, coefficient: coef }, prevSliderTrackStyles) => {
+    const slideEventHandler = useCallback((coefficient, prevSliderTrackStyles, speed) => {
         _slideEventHandler(
-            type,
-            coef,
+            coefficient,
             isBlocked,
             counter,
             setHandleAutoControl,
             setSliderTrackStyles,
             sliderCardsWidth,
             COUNT_OF_CHILDS,
-            prevSliderTrackStyles
+            prevSliderTrackStyles,
+            speed,
+            slidesToShow
         )
-    }, [COUNT_OF_CHILDS, sliderCardsWidth, setHandleAutoControl]);
+    }, [COUNT_OF_CHILDS, sliderCardsWidth, setHandleAutoControl, slidesToShow]);
 
     // MOUSE OUT
     const onHandleMouseOut = ({ clientX }) => {
-        _onHandleMouseUp(
-            clientX,
-            memory,
-            sliderCardsWidth,
-            slideEventHandler,
-            setSliderTrackStyles,
-            prevSliderTrackStyles,
-            sliderTrack
-        )
+        onHandleMouseUp({ clientX: clientX });
         sliderTrack.current.onmousemove = () => null;
     }
 
@@ -99,7 +100,7 @@ const SimpleSlider = ({
 
     // MOUSE UP
     const onHandleMouseUp = useCallback(({ clientX }) => {
-        sliderTrack.current.onmouseout = e => null;
+        sliderTrack.current.onmouseout = () => null;
         _onHandleMouseUp(
             clientX,
             memory,
@@ -107,8 +108,8 @@ const SimpleSlider = ({
             slideEventHandler,
             setSliderTrackStyles,
             prevSliderTrackStyles,
-            sliderTrack
-        )
+            sliderTrack, 200
+        );
     }, [slideEventHandler, sliderCardsWidth]);
 
     // TOUCH START
@@ -137,7 +138,8 @@ const SimpleSlider = ({
             sliderCardsWidth,
             slideEventHandler,
             setSliderTrackStyles,
-            prevSliderTrackStyles
+            prevSliderTrackStyles,
+            200
         )
     }
 
@@ -155,17 +157,11 @@ const SimpleSlider = ({
 
     useEffect(() => {
         interval.current = setInterval(() => {
-            if (freq !== 0) {
-                slideEventHandler(
-                    direction === "left"
-                        ? ({ type: "prev", coefficient: -1 })
-                        : ({ type: "next", coefficient: 1 })
-                )
-            }
-        }, freq)
+            FREQUENCY !== 0 && slideEventHandler(direction === "left" ? -1 : 1, null, speed);
+        }, FREQUENCY);
 
         return () => clearInterval(interval.current);
-    }, [slideEventHandler, freq, direction]);
+    }, [slideEventHandler, FREQUENCY, direction, speed]);
 
     return (
         <div className='container'>
@@ -177,7 +173,7 @@ const SimpleSlider = ({
 
                         <button
                             className='simple-slider__btn simple-slider__bnt--next'
-                            onClick={() => slideEventHandler({ type: "next", coefficient: 1 })}
+                            onClick={() => slideEventHandler(1, null, speed)}
                         >
                             Next
                         </button>
@@ -203,7 +199,10 @@ const SimpleSlider = ({
                                         return <div
                                             className='simple-slider__card'
                                             key={memorizedKeys[index]}
-                                            style={{ width: (sliderCardsWidth / 2) }}
+                                            style={{
+                                                width: sliderCardsWidth / slidesToShow,
+                                                height: sliderCardsWidth / (slidesToShow) / 2
+                                            }}
                                         >
                                             {Item}
                                         </div>
@@ -214,7 +213,7 @@ const SimpleSlider = ({
 
                         <button
                             className='simple-slider__bnt simple-slider__bnt--prev'
-                            onClick={() => slideEventHandler({ type: "prev", coefficient: -1 })}
+                            onClick={() => slideEventHandler(-1, null, speed)}
                         >
                             Previous
                         </button>

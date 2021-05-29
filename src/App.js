@@ -5,10 +5,10 @@ import SimpleSlider from './ReactSlider';
 const App = () => {
   return (
     <div className="app">
-      <SimpleSlider>
+      <SimpleSlider speed={250}>
         {
           data.map(item => {
-            return <div key={item.id}>
+            return <div className="slider__item" key={item.id}>
               <img className='slider__img' src={item.image} alt="" />
             </div>
           })
