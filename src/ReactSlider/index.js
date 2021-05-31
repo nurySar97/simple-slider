@@ -1,5 +1,5 @@
 import "./styles.scss";
-import { multiplyArray } from "./utils";
+import { multiplyArray, transition } from "./utils";
 import { keyGenerator } from "./utils/keyGenerator";
 import React, { Children, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -41,7 +41,12 @@ const SimpleSlider = memo(({
     const [sliderCardsWidth, setSliderCardsWidth] = useState(0);
     const [sliderTrackStyles, setSliderTrackStyles] = useState({});
     const [isIntervalBlocked, setIsIntervalBlocked] = useState(false);
+    const [activeKey, setActiveKey] = useState(0);
     // Variables End
+
+    function beforeChange(next) {
+        setActiveKey(() => next)
+    }
 
     // RETURN DEFAULT
     const setHandleAutoControl = useCallback(() => {
@@ -70,7 +75,8 @@ const SimpleSlider = memo(({
             COUNT_OF_CHILDS,
             prevSliderTrackStyles,
             speed,
-            slidesToShow
+            slidesToShow,
+            beforeChange
         )
     }, [COUNT_OF_CHILDS, sliderCardsWidth, setHandleAutoControl, slidesToShow]);
 
@@ -152,6 +158,7 @@ const SimpleSlider = memo(({
     }
 
     const onHandleDotClick = (index) => {
+        if (isBlocked.current) return;
         let _active_key = (counter.current <= 0 ? Math.abs(counter.current) : COUNT_OF_CHILDS - counter.current);
         slideEventHandler(_active_key - index, null, speed);
     }
@@ -199,7 +206,9 @@ const SimpleSlider = memo(({
                                             key={memorizedKeys[index]}
                                             style={{
                                                 width: sliderCardsWidth / slidesToShow,
-                                                height: sliderCardsWidth / (slidesToShow) / 2
+                                                height: sliderCardsWidth / (slidesToShow) / 2,
+                                                opacity: activeKey !== index % COUNT_OF_CHILDS ? .5 : 1,
+                                                transition: transition(200)
                                             }}
                                             onMouseDown={e => {
                                                 e.preventDefault()

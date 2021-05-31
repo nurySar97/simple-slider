@@ -57,37 +57,43 @@ export const _slideEventHandler = (
     COUNT_OF_CHILDS,
     prevSliderTrackStyles,
     speed,
-    slidesToShow
+    slidesToShow,
+    beforeChange
 ) => {
     if (isBlocked.current) return;
     isBlocked.current = true;
-    
     counter.current = counter.current + coefficient;
 
-    setSliderTrackStyles(prev => {
-        let _TRANSFORM = prevSliderTrackStyles
-            ? prevSliderTrackStyles.current.transformValue + coefficient * (sliderCardsWidth / slidesToShow)
-            : prev.transformValue + coefficient * (sliderCardsWidth / slidesToShow)
+    new Promise(r => {
+        let _arg = Math.abs(counter.current) === COUNT_OF_CHILDS ? 0 : (counter.current <= 0 ? Math.abs(counter.current) : COUNT_OF_CHILDS - counter.current);
+        beforeChange(_arg);
+        setTimeout(r, 0)
+    }).then(() => {
 
-        return {
-            ...prev,
-            transform: translateX(_TRANSFORM),
-            transformValue: _TRANSFORM,
-            transition: transition(speed)
-        }
-    });
+        setSliderTrackStyles(prev => {
+            let _TRANSFORM = prevSliderTrackStyles
+                ? prevSliderTrackStyles.current.transformValue + coefficient * (sliderCardsWidth / slidesToShow)
+                : prev.transformValue + coefficient * (sliderCardsWidth / slidesToShow)
 
-    new Promise(resolve=>{
-        setTimeout(()=>{
-            if (counter.current === (coefficient > 0 ? 1: -1) * COUNT_OF_CHILDS) {
-                counter.current = 0;
-                setHandleAutoControl();
+            return {
+                ...prev,
+                transform: translateX(_TRANSFORM),
+                transformValue: _TRANSFORM,
+                transition: transition(speed)
             }
-            resolve()
-        }, speed * 1.1)
-        
-    }).then(()=>{
-        isBlocked.current = false
+        });
+
+        new Promise(resolve => {
+            setTimeout(() => {
+                if (counter.current === (coefficient > 0 ? 1 : -1) * COUNT_OF_CHILDS) {
+                    counter.current = 0;
+                    setHandleAutoControl();
+                }
+                resolve()
+            }, speed * 1.1);
+        }).then(() => {
+            isBlocked.current = false
+        })
     })
 
 }

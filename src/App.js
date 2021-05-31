@@ -11,8 +11,8 @@ const App = () => {
   return (
     <div className="app">
       <SimpleSlider
-        speed={300}
-        // frequency={3000}
+        speed={400}
+        frequency={3000}
         slidesToShow={slidesToShow}
         moveLeft={moveLeft}
         isSmall={isSmall}
