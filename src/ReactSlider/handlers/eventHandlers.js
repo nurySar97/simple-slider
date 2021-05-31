@@ -66,7 +66,7 @@ export const _slideEventHandler = (
 
     new Promise(r => {
         let _arg = Math.abs(counter.current) === COUNT_OF_CHILDS ? 0 : (counter.current <= 0 ? Math.abs(counter.current) : COUNT_OF_CHILDS - counter.current);
-        beforeChange(_arg);
+        !!beforeChange && beforeChange(_arg);
         setTimeout(r, 0)
     }).then(() => {
 

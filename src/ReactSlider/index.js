@@ -1,7 +1,8 @@
 import "./styles.scss";
-import { multiplyArray, transition } from "./utils";
-import { keyGenerator } from "./utils/keyGenerator";
-import React, { Children, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
+import Cards from './components/Cards';
+import Dots from "./components/Dots";
+import Buttons from "./components/Buttons";
 import {
     _setHandleAutoControl,
     _slideEventHandler,
@@ -13,6 +14,7 @@ import {
     _onHandleTouchStart
 } from "./handlers/eventHandlers";
 
+
 const SimpleSlider = memo(({
     children,
     direction = "left",
@@ -20,13 +22,12 @@ const SimpleSlider = memo(({
     speed = 200,
     slidesToShow = 1,
     moveLeft = 0,
-    isSmall = false
+    isSmall = false,
+    beforeChange
 }) => {
-    // Variables start
+    /* Variables start */
     const COUNT_OF_CHILDS = children?.length || 0;
     let FREQUENCY = frequency === 0 ? 0 : (frequency < 300) ? 300 : frequency;
-    let memorizedChilds = useMemo(() => children && multiplyArray(children), [children]);
-    let memorizedKeys = useMemo(() => keyGenerator(COUNT_OF_CHILDS), [COUNT_OF_CHILDS]);
     const memory = useRef({
         MOUSE_DOWN_X: 0,
         MOUSE_MOVE_X: 0,
@@ -41,14 +42,9 @@ const SimpleSlider = memo(({
     const [sliderCardsWidth, setSliderCardsWidth] = useState(0);
     const [sliderTrackStyles, setSliderTrackStyles] = useState({});
     const [isIntervalBlocked, setIsIntervalBlocked] = useState(false);
-    const [activeKey, setActiveKey] = useState(0);
-    // Variables End
+    /* Variables End */
 
-    function beforeChange(next) {
-        setActiveKey(() => next)
-    }
-
-    // RETURN DEFAULT
+    /* RETURN DEFAULT */
     const setHandleAutoControl = useCallback(() => {
         _setHandleAutoControl(
             counter,
@@ -62,7 +58,7 @@ const SimpleSlider = memo(({
         )
     }, [COUNT_OF_CHILDS, slidesToShow, moveLeft]);
 
-    // BUTTON HANDLER 
+    /* BUTTON HANDLER */
     const slideEventHandler = useCallback((coefficient, prevSliderTrackStyles, speed) => {
         if (isBlocked.current) return;
         _slideEventHandler(
@@ -78,16 +74,16 @@ const SimpleSlider = memo(({
             slidesToShow,
             beforeChange
         )
-    }, [COUNT_OF_CHILDS, sliderCardsWidth, setHandleAutoControl, slidesToShow]);
+    }, [COUNT_OF_CHILDS, sliderCardsWidth, setHandleAutoControl, slidesToShow, beforeChange]);
 
-    // MOUSE OUT
+    /* MOUSE OUT */
     const onHandleMouseOut = ({ clientX }) => {
         if (isBlocked.current) return;
         onHandleMouseUp({ clientX: clientX });
         sliderTrack.current.onmousemove = () => null;
     }
 
-    // MOUSE DOWN
+    /* MOUSE DOWN */
     const onHandleMouseDown = ({ clientX }) => {
         if (isBlocked.current) return;
         sliderTrack.current.onmouseout = e => onHandleMouseOut(e);
@@ -101,13 +97,13 @@ const SimpleSlider = memo(({
         )
     }
 
-    // MOUSE MOVE
+    /* MOUSE MOVE */
     function onHandleMouseMove({ clientX }) {
         if (isBlocked.current) return;
         _onHandleMouseMove(clientX, setSliderTrackStyles, memory)
     }
 
-    // MOUSE UP
+    /* MOUSE UP */
     const onHandleMouseUp = useCallback(({ clientX }) => {
         if (isBlocked.current) return;
         sliderTrack.current.onmouseout = () => null;
@@ -142,7 +138,7 @@ const SimpleSlider = memo(({
         _onHandleTouchMove(e, setSliderTrackStyles, memory)
     }
 
-    // TOUCH END
+    /* TOUCH END */
     const onHandleTouchEnd = (e) => {
         if (isBlocked.current) return;
         _onHandleTouchEnd(
@@ -157,12 +153,14 @@ const SimpleSlider = memo(({
         )
     }
 
+    /* DOT CLICK */
     const onHandleDotClick = (index) => {
         if (isBlocked.current) return;
         let _active_key = (counter.current <= 0 ? Math.abs(counter.current) : COUNT_OF_CHILDS - counter.current);
         slideEventHandler(_active_key - index, null, speed);
     }
 
+    /* EFFECT FOR INIT */
     useEffect(() => {
         if (children) {
             setHandleAutoControl();
@@ -174,6 +172,7 @@ const SimpleSlider = memo(({
         }
     }, [setHandleAutoControl, children]);
 
+    /* EFFECT FOR AUTO SLIDE */
     useEffect(() => {
         interval.current = setInterval(() => {
             if (isIntervalBlocked) return;
@@ -199,92 +198,35 @@ const SimpleSlider = memo(({
                                 style={sliderTrackStyles}
                                 ref={sliderTrack}
                             >
-                                {
-                                    Children.map(memorizedChilds, (Item, index) => {
-                                        return <div
-                                            className='simple-slider__card'
-                                            key={memorizedKeys[index]}
-                                            style={{
-                                                width: sliderCardsWidth / slidesToShow,
-                                                height: sliderCardsWidth / (slidesToShow) / 2,
-                                                opacity: activeKey !== index % COUNT_OF_CHILDS ? .5 : 1,
-                                                transition: transition(200)
-                                            }}
-                                            onMouseDown={e => {
-                                                e.preventDefault()
-                                                onHandleMouseDown(e)
-                                            }}
-                                            onMouseUp={e => {
-                                                e.preventDefault()
-                                                onHandleMouseUp(e)
-                                            }}
-                                            onTouchStart={onHandleTouchStart}
-                                            onTouchEnd={onHandleTouchEnd}
-                                            onMouseLeave={e => {
-                                                e.stopPropagation();
-                                                setIsIntervalBlocked(false)
-                                            }}
-                                            onMouseEnter={e => {
-                                                e.stopPropagation()
-                                                setIsIntervalBlocked(true)
-                                            }}
-                                        >
-                                            {Item}
-                                        </div>
-                                    })
-                                }
+                                <Cards
+                                    sliderCardsWidth={sliderCardsWidth}
+                                    slidesToShow={slidesToShow}
+                                    onHandleMouseDown={onHandleMouseDown}
+                                    onHandleMouseUp={onHandleMouseUp}
+                                    onHandleTouchStart={onHandleTouchStart}
+                                    onHandleTouchEnd={onHandleTouchEnd}
+                                    setIsIntervalBlocked={setIsIntervalBlocked}
+                                    children={children}
+                                    COUNT_OF_CHILDS={COUNT_OF_CHILDS}
+                                />
                             </div>
                         </div>
 
-                        <div className="simple-slider__dots">
-                            {
-                                Children.map(children, (_, index) => {
-                                    return (
-                                        <div
-                                            className={`simple-slider__dots-item${index === (counter.current <= 0 ? Math.abs(counter.current) : COUNT_OF_CHILDS - counter.current) ? ' active' : ``}`}
-                                            onClick={() => onHandleDotClick(index)}
-                                        />
-                                    )
-                                })
-                            }
-                        </div>
+                        <Dots
+                            children={children}
+                            counter={counter}
+                            COUNT_OF_CHILDS={COUNT_OF_CHILDS}
+                            onHandleDotClick={onHandleDotClick}
+                        />
 
-                        <button
-                            className='simple-slider__btn simple-slider__btn--next'
-                            onClick={e => {
-                                e.stopPropagation();
-                                slideEventHandler(1, null, speed);
-                            }}
-                            onMouseEnter={e => {
-                                e.stopPropagation()
-                                setIsIntervalBlocked(true)
-                            }}
-                            style={isSmall ? { display: "none" } : ({
-                                left: sliderCardsWidth / slidesToShow / 2 - 80,
-                                top: sliderCardsWidth / slidesToShow / 4 - 12
-                            })}
-
-                        >
-                            {"<"}
-                        </button>
-
-                        <button
-                            className='simple-slider__btn simple-slider__btn--prev'
-                            onClick={e => {
-                                e.stopPropagation();
-                                slideEventHandler(-1, null, speed);
-                            }}
-                            onMouseEnter={e => {
-                                e.stopPropagation()
-                                setIsIntervalBlocked(true)
-                            }}
-                            style={isSmall ? { display: "none" } : {
-                                right: sliderCardsWidth / slidesToShow / 2 - 80,
-                                top: sliderCardsWidth / slidesToShow / 4 - 12
-                            }}
-                        >
-                            {">"}
-                        </button>
+                        <Buttons
+                            slideEventHandler={slideEventHandler}
+                            setIsIntervalBlocked={setIsIntervalBlocked}
+                            isSmall={isSmall}
+                            sliderCardsWidth={sliderCardsWidth}
+                            slidesToShow={slidesToShow}
+                            speed={speed}
+                        />
                     </div>
                 </section>
             }

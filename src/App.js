@@ -16,6 +16,7 @@ const App = () => {
         slidesToShow={slidesToShow}
         moveLeft={moveLeft}
         isSmall={isSmall}
+        // beforeChange={next => console.log(next)}
       >
         {
           data.map(item => {
