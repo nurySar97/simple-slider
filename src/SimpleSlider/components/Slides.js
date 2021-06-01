@@ -25,24 +25,6 @@ const Default = ({
                             width: width,
                             height: width / widthHeightAttitude
                         }}
-                        // onMouseDown={e => {
-                        //     e.preventDefault()
-                        //     onHandleMouseDown(e)
-                        // }}
-                        // onMouseUp={e => {
-                        //     e.preventDefault()
-                        //     onHandleMouseUp(e)
-                        // }}
-                        // onTouchStart={onHandleTouchStart}
-                        // onTouchEnd={onHandleTouchEnd}
-                        // onMouseLeave={e => {
-                        //     e.stopPropagation();
-                        //     setIsIntervalBlocked(false)
-                        // }}
-                        // onMouseEnter={e => {
-                        //     e.stopPropagation()
-                        //     setIsIntervalBlocked(true)
-                        // }}
                     >
                         {Item}
                     </div>

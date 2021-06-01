@@ -6,7 +6,8 @@ const Buttons = ({
         sliderListWidth,
         widthHeightAttitude,
         addWidth,
-        buttons
+        buttons,
+        speed
     },
     slideEventHandler
 }) => {
@@ -19,12 +20,18 @@ const Buttons = ({
                 style={buttons ? ({ left: leftRight, top: topBottom }) : { display: "none" }
                 }
                 children={"<"}
-                onClick={() => slideEventHandler(1, 'click', 200)}
+                onClick={e => {
+                    e.stopPropagation();
+                    slideEventHandler(1, 'click', speed)
+                }}
             />
 
             <button
                 className='simple-slider__btn simple-slider__btn--prev'
-                onClick={() => slideEventHandler(-1, 'click', 200)}
+                onClick={e => {
+                    e.stopPropagation();
+                    slideEventHandler(-1, 'click', speed)
+                }}
                 style={buttons ? { right: leftRight, top: topBottom } : { display: "none" }}
                 children={">"}
             />

@@ -5,22 +5,23 @@ import { Events } from './eventClasses';
 import Buttons from './components/Buttons';
 
 class Slider extends Events {
+    state = {
+        sliderTrackStyles: {},
+        sliderListWidth: 0
+    };
+    sliderList = createRef(null);
+    sliderTrack = createRef(null);
+    prevSliderTrackStyles = {};
+    isBlocked = false;
+    counter = 0;
+    memoryCoords = {
+        MOUSE_DOWN_X: 0,
+        MOUSE_MOVE_X: 0,
+        MOUSE_DOWN_CLIENT_X: 0
+    }
 
     static getDerivedStateFromProps(props, state) {
         return { ...state, ...props }
-    }
-
-    constructor(props) {
-        super(props)
-        this.sliderList = createRef(null);
-        this.sliderTrack = createRef(null);
-        this.prevSliderTrackStyles = createRef({});
-        this.isBlocked = createRef(false);
-        this.counter = createRef(0);
-        this.state = {
-            sliderTrackStyles: {},
-            sliderListWidth: 0
-        };
     }
 
     componentDidMount() {
@@ -36,29 +37,30 @@ class Slider extends Events {
         return (
             <div className='container'>
                 <section className="simple-slider">
-                    {
-                        this.state.children && <div className="simple-slider__inner">
+                    <div className="simple-slider__inner">
+                        <div
+                            className="simple-slider__list"
+                            ref={this.sliderList}
+                            onMouseDown={this.onHandleMouseDown.bind(this)}
+                            onMouseUp={this.onHandleMouseUp.bind(this)}
+                            onTouchStart={this.onHandleTouchStart.bind(this)}
+                            onTouchEnd={this.onHandleTouchEnd.bind(this)}
+                        >
                             <div
-                                className="simple-slider__list"
-                                ref={this.sliderList}
+                                className="simple-slider__track"
+                                style={this.state.sliderTrackStyles}
+                                ref={this.sliderTrack}
                             >
-                                <div
-                                    className="simple-slider__track"
-                                    style={this.state.sliderTrackStyles}
-                                    ref={this.sliderTrack}
-                                >
-                                    <Slides
-                                        state={this.state}
-                                    />
-                                </div>
-
-                                <Buttons
-                                    slideEventHandler={this.slideEventHandler}
+                                <Slides
                                     state={this.state}
                                 />
                             </div>
                         </div>
-                    }
+                        <Buttons
+                            slideEventHandler={this.slideEventHandler}
+                            state={this.state}
+                        />
+                    </div>
                 </section>
             </div>
         )
@@ -79,7 +81,7 @@ const Default = ({
     widthHeightAttitude = 2
 }) => {
     const COUNT_OF_CHILDS = children ? children.length : 0
-    return <Slider
+    return children ? <Slider
         children={children}
         direction={direction}
         frequency={frequency === 0 ? 0 : (frequency < 300) ? 300 : frequency}
@@ -92,7 +94,10 @@ const Default = ({
         initPosition={initPosition === COUNT_OF_CHILDS ? 0 : (initPosition <= 0 ? Math.abs(initPosition) : COUNT_OF_CHILDS - initPosition)}
         widthHeightAttitude={widthHeightAttitude}
         countOfChildren={COUNT_OF_CHILDS}
+
     />
+        :
+        null
 }
 
 export default Default;
