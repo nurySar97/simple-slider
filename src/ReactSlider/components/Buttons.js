@@ -3,11 +3,15 @@ import React from 'react'
 const Buttons = ({
     slideEventHandler,
     setIsIntervalBlocked,
-    isSmall,
     sliderCardsWidth,
     slidesToShow,
-    speed
+    speed,
+    addWidth,
+    buttons,
+    widthHeightAttitude
 }) => {
+    let leftRight = (sliderCardsWidth / slidesToShow / 2) - 80 - addWidth / 2;
+    let topBottom = (sliderCardsWidth / slidesToShow) / (widthHeightAttitude *2) - 12;
     return (
         <>
             <button
@@ -20,10 +24,11 @@ const Buttons = ({
                     e.stopPropagation()
                     setIsIntervalBlocked(true)
                 }}
-                style={isSmall ? { display: "none" } : ({
-                    left: sliderCardsWidth / slidesToShow / 2 - 80,
-                    top: sliderCardsWidth / slidesToShow / 4 - 12
-                })}
+                style={buttons ? ({
+                    left: leftRight,
+                    top: topBottom
+                }) : { display: "none" }
+                }
 
             >
                 {"<"}
@@ -39,10 +44,11 @@ const Buttons = ({
                     e.stopPropagation()
                     setIsIntervalBlocked(true)
                 }}
-                style={isSmall ? { display: "none" } : {
-                    right: sliderCardsWidth / slidesToShow / 2 - 80,
-                    top: sliderCardsWidth / slidesToShow / 4 - 12
-                }}
+                style={buttons ? {
+                    right: leftRight,
+                    top: topBottom
+                } : { display: "none" }
+                }
             >
                 {">"}
             </button>

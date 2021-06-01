@@ -19,11 +19,14 @@ const SimpleSlider = memo(({
     children,
     direction = "left",
     frequency = 0,
-    speed = 200,
+    speed = 250,
     slidesToShow = 1,
     moveLeft = 0,
-    isSmall = false,
-    beforeChange
+    buttons = true,
+    addWidth = 0,
+    dots = null,
+    initPosition = 1,
+    widthHeightAttitude = 2
 }) => {
     /* Variables start */
     const COUNT_OF_CHILDS = children?.length || 0;
@@ -33,7 +36,7 @@ const SimpleSlider = memo(({
         MOUSE_MOVE_X: 0,
         MOUSE_DOWN_CLIENT_X: 0
     });
-    const counter = useRef(0);
+    const counter = useRef(initPosition === COUNT_OF_CHILDS ? 0 : (initPosition <= 0 ? Math.abs(initPosition) : COUNT_OF_CHILDS - initPosition));
     const interval = useRef(null);
     const isBlocked = useRef(false);
     const sliderCards = useRef(null);
@@ -43,6 +46,11 @@ const SimpleSlider = memo(({
     const [sliderTrackStyles, setSliderTrackStyles] = useState({});
     const [isIntervalBlocked, setIsIntervalBlocked] = useState(false);
     /* Variables End */
+
+    const beforeChange = useCallback(next => {
+
+    }, [])
+
 
     /* RETURN DEFAULT */
     const setHandleAutoControl = useCallback(() => {
@@ -54,9 +62,11 @@ const SimpleSlider = memo(({
             setSliderCardsWidth,
             setSliderTrackStyles,
             slidesToShow,
-            moveLeft
+            moveLeft,
+            addWidth
         )
-    }, [COUNT_OF_CHILDS, slidesToShow, moveLeft]);
+    }, [COUNT_OF_CHILDS, slidesToShow, moveLeft, addWidth]);
+
 
     /* BUTTON HANDLER */
     const slideEventHandler = useCallback((coefficient, prevSliderTrackStyles, speed) => {
@@ -76,12 +86,14 @@ const SimpleSlider = memo(({
         )
     }, [COUNT_OF_CHILDS, sliderCardsWidth, setHandleAutoControl, slidesToShow, beforeChange]);
 
+
     /* MOUSE OUT */
     const onHandleMouseOut = ({ clientX }) => {
         if (isBlocked.current) return;
         onHandleMouseUp({ clientX: clientX });
         sliderTrack.current.onmousemove = () => null;
     }
+
 
     /* MOUSE DOWN */
     const onHandleMouseDown = ({ clientX }) => {
@@ -97,11 +109,13 @@ const SimpleSlider = memo(({
         )
     }
 
+
     /* MOUSE MOVE */
     function onHandleMouseMove({ clientX }) {
         if (isBlocked.current) return;
         _onHandleMouseMove(clientX, setSliderTrackStyles, memory)
     }
+
 
     /* MOUSE UP */
     const onHandleMouseUp = useCallback(({ clientX }) => {
@@ -119,6 +133,7 @@ const SimpleSlider = memo(({
         );
     }, [slideEventHandler, sliderCardsWidth]);
 
+
     // TOUCH START
     const onHandleTouchStart = e => {
         if (isBlocked.current) return;
@@ -132,11 +147,13 @@ const SimpleSlider = memo(({
         )
     }
 
+
     // TOUCH MOVE
     function onHandleTouchMove(e) {
         if (isBlocked.current) return;
         _onHandleTouchMove(e, setSliderTrackStyles, memory)
     }
+
 
     /* TOUCH END */
     const onHandleTouchEnd = (e) => {
@@ -153,12 +170,14 @@ const SimpleSlider = memo(({
         )
     }
 
+
     /* DOT CLICK */
     const onHandleDotClick = (index) => {
         if (isBlocked.current) return;
         let _active_key = (counter.current <= 0 ? Math.abs(counter.current) : COUNT_OF_CHILDS - counter.current);
         slideEventHandler(_active_key - index, null, speed);
     }
+
 
     /* EFFECT FOR INIT */
     useEffect(() => {
@@ -171,6 +190,7 @@ const SimpleSlider = memo(({
             }
         }
     }, [setHandleAutoControl, children]);
+
 
     /* EFFECT FOR AUTO SLIDE */
     useEffect(() => {
@@ -208,6 +228,7 @@ const SimpleSlider = memo(({
                                     setIsIntervalBlocked={setIsIntervalBlocked}
                                     children={children}
                                     COUNT_OF_CHILDS={COUNT_OF_CHILDS}
+                                    widthHeightAttitude={widthHeightAttitude}
                                 />
                             </div>
                         </div>
@@ -217,15 +238,18 @@ const SimpleSlider = memo(({
                             counter={counter}
                             COUNT_OF_CHILDS={COUNT_OF_CHILDS}
                             onHandleDotClick={onHandleDotClick}
+                            dots={dots}
                         />
 
                         <Buttons
                             slideEventHandler={slideEventHandler}
                             setIsIntervalBlocked={setIsIntervalBlocked}
-                            isSmall={isSmall}
+                            buttons={buttons}
                             sliderCardsWidth={sliderCardsWidth}
                             slidesToShow={slidesToShow}
                             speed={speed}
+                            addWidth={addWidth}
+                            widthHeightAttitude={widthHeightAttitude}
                         />
                     </div>
                 </section>

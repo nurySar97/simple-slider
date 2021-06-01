@@ -11,10 +11,12 @@ const Default = ({
     onHandleTouchEnd,
     setIsIntervalBlocked,
     children,
-    COUNT_OF_CHILDS
+    COUNT_OF_CHILDS,
+    widthHeightAttitude
 }) => {
     let memorizedChilds = useMemo(() => children && multiplyArray(children), [children]);
     let memorizedKeys = useMemo(() => keyGenerator(COUNT_OF_CHILDS), [COUNT_OF_CHILDS]);
+    let width = (sliderCardsWidth / slidesToShow)
     return (
         <>
             {
@@ -23,8 +25,8 @@ const Default = ({
                         className='simple-slider__card'
                         key={memorizedKeys[index]}
                         style={{
-                            width: sliderCardsWidth / slidesToShow,
-                            height: sliderCardsWidth / (slidesToShow) / 2
+                            width: width,
+                            height: width / widthHeightAttitude
                         }}
                         onMouseDown={e => {
                             e.preventDefault()

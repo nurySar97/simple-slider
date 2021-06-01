@@ -8,17 +8,21 @@ export const _setHandleAutoControl = (
     setSliderCardsWidth,
     setSliderTrackStyles,
     slidesToShow,
-    moveLeft
+    moveLeft,
+    addWidth = 0
 ) => {
     let { current: {
-        clientWidth: _SLIDER_CARDS_WIDTH
+        clientWidth
     } } = sliderCards;
 
+    let _SLIDER_CARDS_WIDTH = (addWidth + clientWidth);
+
     let _TRANS_COEF = counter.current - COUNT_OF_CHILDS * 2 + moveLeft
-    let _TRANSFORM = (_SLIDER_CARDS_WIDTH) / slidesToShow * _TRANS_COEF;
+    let _TRANSFORM;
     let _REMAINDER = _SLIDER_CARDS_WIDTH % slidesToShow;
 
     if (_REMAINDER === 0) {
+        _TRANSFORM = (_SLIDER_CARDS_WIDTH / slidesToShow) * _TRANS_COEF - (addWidth / 2);
         setSliderCardsWidth(_SLIDER_CARDS_WIDTH);
 
         prevSliderTrackStyles.current = {
@@ -33,7 +37,7 @@ export const _setHandleAutoControl = (
     }
 
     let _SLIDER_CARDS_ROUNDED_WIDTH = (_SLIDER_CARDS_WIDTH - _REMAINDER) / slidesToShow;
-    _TRANSFORM = _SLIDER_CARDS_ROUNDED_WIDTH * _TRANS_COEF;
+    _TRANSFORM = _SLIDER_CARDS_ROUNDED_WIDTH * _TRANS_COEF - addWidth / 2;
 
     prevSliderTrackStyles.current = {
         width: _SLIDER_CARDS_ROUNDED_WIDTH * COUNT_OF_CHILDS * 5,
@@ -42,7 +46,7 @@ export const _setHandleAutoControl = (
         transition: transition()
     }
 
-    setSliderCardsWidth(_SLIDER_CARDS_ROUNDED_WIDTH * 2);
+    setSliderCardsWidth(_SLIDER_CARDS_ROUNDED_WIDTH * slidesToShow);
     setSliderTrackStyles(prevSliderTrackStyles.current);
 }
 
@@ -229,12 +233,12 @@ function _autoTouchAndMoveController(
 ) {
     (_DIFERENCE > 0
         ?
-        _DIFERENCE > sliderCardsWidth / 4
+        _DIFERENCE > sliderCardsWidth / 10
             ? slideEventHandler(1, prevSliderTrackStyles, speed)
             : setTransition()
 
         :
-        _DIFERENCE < -sliderCardsWidth / 4
+        _DIFERENCE < -sliderCardsWidth / 10
             ? slideEventHandler(-1, prevSliderTrackStyles, speed)
             : setTransition()
     );

@@ -8,7 +8,7 @@
     width: 100%;
 }
 
-.simple-slider__cards {
+.simple-slider__list {
     overflow: hidden;
     cursor: pointer;
 }
@@ -20,7 +20,7 @@
     -ms-user-select: none;
 }
 
-.simple-slider__card {
+.simple-slider__slide {
     position: relative;
     height: 100%;
     display: inline-block;

@@ -4,9 +4,10 @@ const Dots = ({
     children,
     counter,
     COUNT_OF_CHILDS,
-    onHandleDotClick
+    onHandleDotClick,
+    dots
 }) => {
-    return (
+    return dots && (
         <div className="simple-slider__dots">
             {
                 Children.map(children, (_, index) => {
