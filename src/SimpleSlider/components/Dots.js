@@ -1,17 +1,19 @@
 import React, { Children } from 'react'
 
 const Dots = ({
-    children,
+    state: {
+        children,
+        countOfChildren,
+        dots
+    },
     counter,
-    COUNT_OF_CHILDS,
-    onHandleDotClick,
-    dots
+    onHandleDotClick
 }) => {
     return dots && (
         <div className="simple-slider__dots">
             {
                 Children.map(children, (_, index) => {
-                    let _isActive = index === (counter.current <= 0 ? Math.abs(counter.current) : COUNT_OF_CHILDS - counter.current);
+                    let _isActive = index === (counter <= 0 ? Math.abs(counter) : countOfChildren - counter);
                     return (
                         <div
                             className={`simple-slider__dots-item${_isActive ? ' active' : ``}`}

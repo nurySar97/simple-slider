@@ -3,6 +3,7 @@ import React, { createRef } from 'react';
 import Slides from './components/Slides';
 import { Events } from './eventClasses';
 import Buttons from './components/Buttons';
+import Dots from './components/Dots';
 
 class Slider extends Events {
     state = {
@@ -42,9 +43,7 @@ class Slider extends Events {
                             className="simple-slider__list"
                             ref={this.sliderList}
                             onMouseDown={this.onHandleMouseDown.bind(this)}
-                            onMouseUp={this.onHandleMouseUp.bind(this)}
                             onTouchStart={this.onHandleTouchStart.bind(this)}
-                            onTouchEnd={this.onHandleTouchEnd.bind(this)}
                         >
                             <div
                                 className="simple-slider__track"
@@ -56,6 +55,9 @@ class Slider extends Events {
                                 />
                             </div>
                         </div>
+
+                        <Dots onHandleDotClick={this.onHandleDotClick.bind(this)} counter={this.counter} state={this.state} />
+
                         <Buttons
                             slideEventHandler={this.slideEventHandler}
                             state={this.state}
@@ -71,14 +73,15 @@ const Default = ({
     children,
     direction = "left",
     frequency = 0,
-    speed = 250,
+    speed = 500,
     slidesToShow = 2,
     moveLeft = 0,
     buttons = true,
     addWidth = 0,
     dots = null,
     initPosition = 1,
-    widthHeightAttitude = 2
+    widthHeightAttitude = 2,
+    beforeChange = null
 }) => {
     const COUNT_OF_CHILDS = children ? children.length : 0
     return children ? <Slider
@@ -94,7 +97,7 @@ const Default = ({
         initPosition={initPosition === COUNT_OF_CHILDS ? 0 : (initPosition <= 0 ? Math.abs(initPosition) : COUNT_OF_CHILDS - initPosition)}
         widthHeightAttitude={widthHeightAttitude}
         countOfChildren={COUNT_OF_CHILDS}
-
+        beforeChange={beforeChange}
     />
         :
         null

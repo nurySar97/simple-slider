@@ -13,7 +13,7 @@ const Default = ({
 }) => {
     let memorizedChilds = useMemo(() => children && multiplyArray(children), [children]);
     let memorizedKeys = useMemo(() => keyGenerator(countOfChildren), [countOfChildren]);
-    let width = (sliderListWidth / slidesToShow)
+    let width = (sliderListWidth / slidesToShow);
     return (
         <>
             {
