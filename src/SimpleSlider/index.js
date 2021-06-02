@@ -8,7 +8,8 @@ import Dots from './components/Dots';
 class Slider extends Events {
     state = {
         sliderTrackStyles: {},
-        sliderListWidth: 0
+        sliderListWidth: 0,
+        isMouseEnter: false
     };
     sliderList = createRef(null);
     sliderTrack = createRef(null);
@@ -25,20 +26,43 @@ class Slider extends Events {
         return { ...state, ...props }
     }
 
+    componentDidUpdate(prevProps, prevState) {
+        if (this.props.frequency !== 0) {
+            if ((this.props.frequency !== 0 && this.props.frequency !== prevProps.frequency) || (!this.state.isMouseEnter && prevState.isMouseEnter !== this.state.isMouseEnter)) {
+                this.interval = setInterval(() => {
+                    this.slideEventHandler(-1, 'click', 200)
+                }, this.state.frequency)
+            } else if ((this.props.frequency === 0 && this.props.frequency !== prevProps.frequency) || (this.state.isMouseEnter && prevState.isMouseEnter !== this.state.isMouseEnter)) {
+                clearInterval(this.interval)
+            }
+        }
+
+    }
+
     componentDidMount() {
         this.setHandleAutoControl();
         window.addEventListener("resize", this.setHandleAutoControl)
+
+        if (this.state.frequency !== 0) {
+            this.interval = setInterval(() => {
+                this.slideEventHandler(-1, 'click', 200)
+            }, this.state.frequency)
+        }
     };
 
     componentWillUnmount() {
-        window.removeEventListener("resize", this.setHandleAutoControl)
+        window.removeEventListener("resize", this.setHandleAutoControl);
+        clearInterval(this.interval)
     };
 
     render() {
         return (
             <div className='container'>
                 <section className="simple-slider">
-                    <div className="simple-slider__inner">
+                    <div className="simple-slider__inner"
+                        onMouseEnter={() => this.setState({ isMouseEnter: true })}
+                        onMouseLeave={() => this.setState({ isMouseEnter: false })}
+                    >
                         <div
                             className="simple-slider__list"
                             ref={this.sliderList}
