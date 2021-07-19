@@ -1,11 +1,11 @@
 import './styles.scss';
 import React, { createRef } from 'react';
 import Slides from './components/Slides';
-import { Events } from './eventClasses';
+import SuperClass from './eventClasses';
 import Buttons from './components/Buttons';
 import Dots from './components/Dots';
 
-class Slider extends Events {
+class Slider extends SuperClass {
     state = {
         sliderTrackStyles: {},
         sliderListWidth: 0,
@@ -21,18 +21,36 @@ class Slider extends Events {
         MOUSE_MOVE_X: 0,
         MOUSE_DOWN_CLIENT_X: 0
     }
+    observerSliderList = null;
 
-    static getDerivedStateFromProps(props, state) {
-        return { ...state, ...props }
-    }
+    static getDerivedStateFromProps = (props, state) => ({ ...state, ...props });
 
     componentDidUpdate(prevProps, prevState) {
         if (this.props.frequency !== 0) {
-            if ((this.props.frequency !== 0 && this.props.frequency !== prevProps.frequency) || (!this.state.isMouseEnter && prevState.isMouseEnter !== this.state.isMouseEnter)) {
+            if ((
+                this.props.frequency !== 0
+                &&
+                this.props.frequency !== prevProps.frequency
+            )
+                ||
+                (
+                    !this.state.isMouseEnter
+                    && prevState.isMouseEnter !== this.state.isMouseEnter
+                )) {
                 this.interval = setInterval(() => {
                     this.slideEventHandler(-1, 'click', 200)
                 }, this.state.frequency)
-            } else if ((this.props.frequency === 0 && this.props.frequency !== prevProps.frequency) || (this.state.isMouseEnter && prevState.isMouseEnter !== this.state.isMouseEnter)) {
+            } else if ((
+                this.props.frequency === 0
+                &&
+                this.props.frequency !== prevProps.frequency
+            )
+                ||
+                (
+                    this.state.isMouseEnter
+                    &&
+                    prevState.isMouseEnter !== this.state.isMouseEnter
+                )) {
                 clearInterval(this.interval)
             }
         }
@@ -40,8 +58,8 @@ class Slider extends Events {
     }
 
     componentDidMount() {
-        this.setHandleAutoControl();
-        window.addEventListener("resize", this.setHandleAutoControl)
+        this.observerSliderList = new ResizeObserver(this.setHandleAutoControl)
+            .observe(this.sliderList.current);
 
         if (this.state.frequency !== 0) {
             this.interval = setInterval(() => {
@@ -51,7 +69,7 @@ class Slider extends Events {
     };
 
     componentWillUnmount() {
-        window.removeEventListener("resize", this.setHandleAutoControl);
+        this.observerSliderList?.disconnect(this.sliderList.current);
         clearInterval(this.interval)
     };
 
@@ -65,14 +83,14 @@ class Slider extends Events {
                     >
                         <div
                             className="simple-slider__list"
-                            ref={this.sliderList}
+                            ref={e => !!e && (this.sliderList.current = e)}
                             onMouseDown={this.onHandleMouseDown.bind(this)}
                             onTouchStart={this.onHandleTouchStart.bind(this)}
                         >
                             <div
                                 className="simple-slider__track"
                                 style={this.state.sliderTrackStyles}
-                                ref={this.sliderTrack}
+                                ref={e => !!e && (this.sliderTrack.current = e)}
                             >
                                 <Slides
                                     state={this.state}
